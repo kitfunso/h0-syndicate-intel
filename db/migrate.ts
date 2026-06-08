@@ -9,7 +9,9 @@ import { readFileSync, readdirSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { Client } from "pg";
-import "dotenv/config";
+import { config } from "dotenv";
+config({ path: ".env.local" }); // Next.js convention; falls back to .env below
+config();
 
 const here = dirname(fileURLToPath(import.meta.url));
 const migrationsDir = join(here, "migrations");

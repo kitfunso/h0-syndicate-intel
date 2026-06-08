@@ -10,8 +10,11 @@ import { readFileSync, existsSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { Client } from "pg";
-import "dotenv/config";
+import { config } from "dotenv";
 import { embedTexts } from "../lib/vertex";
+
+config({ path: ".env.local" }); // Next.js convention; falls back to .env below
+config();
 
 type Lob = {
   line_of_business: string;

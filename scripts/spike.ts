@@ -8,8 +8,11 @@
  *
  *   npm run spike
  */
-import "dotenv/config";
+import { config } from "dotenv";
 import { askMarket } from "../lib/ask";
+
+config({ path: ".env.local" }); // Next.js convention; falls back to .env below
+config();
 
 const QUESTIONS = [
   "Rank syndicates by combined ratio for 2023",
