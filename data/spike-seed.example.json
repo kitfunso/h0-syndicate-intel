@@ -1,0 +1,45 @@
+[
+  {
+    "syndicate_number": 2623,
+    "name": "Beazley",
+    "managing_agent": "Beazley Furlonge Ltd",
+    "inception_year": 1995,
+    "years": [
+      {
+        "year_of_account": 2023,
+        "facts": {
+          "capacity_gbp": 2000000000,
+          "gwp_gbp": 1850000000,
+          "nwp_gbp": 1400000000,
+          "combined_ratio": 0.78,
+          "result_gbp": 320000000,
+          "return_on_capacity": 0.16,
+          "source_page": 12,
+          "verified": true
+        },
+        "lob": [
+          {
+            "line_of_business": "Cyber",
+            "gwp_gbp": 600000000,
+            "loss_ratio": 0.55,
+            "combined_ratio": 0.82,
+            "source_page": 34,
+            "verified": true
+          }
+        ],
+        "report": {
+          "title": "Syndicate 2623 Annual Report 2023",
+          "source_url": "https://www.example.com/2623-2023.pdf",
+          "n_pages": 80
+        },
+        "chunks": [
+          {
+            "page_no": 12,
+            "section": "Active Underwriter Statement",
+            "text": "The 2023 year of account delivered a combined ratio of 78%, driven by strong rate adequacy in cyber and a benign large-loss environment..."
+          }
+        ]
+      }
+    ]
+  }
+]

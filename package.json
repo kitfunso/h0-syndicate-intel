@@ -1,0 +1,39 @@
+{
+  "name": "h0-syndicate-intel",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Ask the Market - Lloyd's syndicate intelligence (H0 hackathon)",
+  "license": "MIT",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "migrate": "tsx db/migrate.ts",
+    "seed:spike": "tsx db/seed-spike.ts",
+    "test": "vitest run tests/validator.test.ts",
+    "test:int": "vitest run tests/safety.int.test.ts",
+    "spike": "tsx scripts/spike.ts"
+  },
+  "dependencies": {
+    "@google/genai": "^1.9.0",
+    "@vercel/functions": "^2.0.0",
+    "next": "^15.1.0",
+    "pg": "^8.13.1",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "zod": "^3.24.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "@types/pg": "^8.11.10",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "autoprefixer": "^10.4.20",
+    "dotenv": "^16.4.7",
+    "postcss": "^8.4.49",
+    "tailwindcss": "^3.4.17",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2",
+    "vitest": "^2.1.8"
+  }
+}

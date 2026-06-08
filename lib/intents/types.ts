@@ -1,0 +1,72 @@
+/**
+ * Shared types + allowlists for the intent layer.
+ *
+ * SAFETY MODEL: the LLM only ever chooses an intent name + params. It never writes
+ * SQL. Column choices (metric, line of business, sort direction) are constrained to
+ * the allowlisted literals below, so even the identifier injected into a query
+ * template comes from a fixed set; all values are bound as parameters.
+ */
+
+// Metric names ARE the column names; validated to this enum before use as an identifier.
+export const METRICS = [
+  "gwp_gbp",
+  "nwp_gbp",
+  "combined_ratio",
+  "result_gbp",
+  "return_on_capacity",
+  "capacity_gbp",
+] as const;
+export type Metric = (typeof METRICS)[number];
+
+export const LINES_OF_BUSINESS = [
+  "Property",
+  "Casualty",
+  "Marine",
+  "Aviation",
+  "Energy",
+  "Cyber",
+  "Reinsurance",
+  "Specialty",
+] as const;
+
+export const INTENT_NAMES = ["rank_syndicates", "trend", "narrative_search"] as const;
+export type IntentName = (typeof INTENT_NAMES)[number];
+
+/** A compiled analytical query: a fixed SQL template + bound params. */
+export type SqlQuery = { text: string; params: unknown[] };
+
+/** What the router returns; validated against the catalog before anything runs. */
+export type RoutedQuery = { intent: IntentName; params: Record<string, unknown> };
+
+export type Citation = {
+  report_id: number;
+  page_no: number | null;
+  section?: string | null;
+  source_url?: string | null;
+  syndicate_number?: number | null;
+};
+
+export type AskRow = Record<string, unknown>;
+
+/** Services an intent needs to run, injected so intents stay unit-testable. */
+export type IntentContext = {
+  execReadOnly: (q: SqlQuery) => Promise<Record<string, unknown>[]>;
+  embedQuery: (text: string) => Promise<number[]>;
+  rowLimit: number;
+};
+
+export type AskResult =
+  | {
+      ok: true;
+      intent: IntentName;
+      answer: string;
+      rows: AskRow[];
+      citations: Citation[];
+    }
+  | { ok: false; degraded: true; reason: string; suggestions: string[] };
+
+/** Server-side, env-derived row cap. Never user input, so safe to interpolate. */
+export function rowLimit(): number {
+  const n = Number(process.env.QUERY_ROW_LIMIT ?? 200);
+  return Math.max(1, Math.min(500, Number.isFinite(n) ? n : 200));
+}
