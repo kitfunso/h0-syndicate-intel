@@ -4,7 +4,7 @@
  * [n]. The UI renders [n] as a clickable link to the source report page. The model
  * cannot introduce a figure that is not already grounded in a fact row.
  */
-import { composeText } from "./vertex";
+import { composeText } from "./llm";
 import type { AskRow, Citation, IntentName } from "./intents/types";
 
 export async function compose(

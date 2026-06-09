@@ -11,7 +11,7 @@ import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { Client } from "pg";
 import { config } from "dotenv";
-import { embedTexts } from "../lib/vertex";
+import { embedTexts } from "../lib/llm";
 
 config({ path: ".env.local" });
 config();
@@ -129,7 +129,7 @@ async function main() {
 
         const chunks = y.chunks ?? [];
         if (chunks.length && reportId != null) {
-          const vectors = await embedTexts(chunks.map((c) => c.text), "RETRIEVAL_DOCUMENT");
+          const vectors = await embedTexts(chunks.map((c) => c.text));
           for (let i = 0; i < chunks.length; i++) {
             await client.query(
               `INSERT INTO report_chunk (report_id, page_no, section, text, embedding)

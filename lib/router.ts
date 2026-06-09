@@ -1,20 +1,18 @@
 /**
- * The router: natural-language question -> {intent, params} via Gemini structured
- * output. The model picks from the catalog and fills params. It NEVER writes SQL.
- * Returns null (=> graceful degrade) when nothing maps.
+ * The router: natural-language question -> {intent, params} via Claude on Bedrock,
+ * with the Vercel AI SDK enforcing the output schema. The model picks from the catalog
+ * and fills params. It NEVER writes SQL. Returns null (=> graceful degrade) when
+ * nothing maps.
  */
-import { generateJson } from "./vertex";
+import { z } from "zod";
+import { generateJson } from "./llm";
 import { catalogPromptSpec } from "./intents/catalog";
 import { INTENT_NAMES, type RoutedQuery } from "./intents/types";
 
-const ROUTER_SCHEMA = {
-  type: "object",
-  properties: {
-    intent: { type: "string", enum: [...INTENT_NAMES, "none"] },
-    params: { type: "object" },
-  },
-  required: ["intent", "params"],
-} as const;
+const RouterSchema = z.object({
+  intent: z.enum([...INTENT_NAMES, "none"] as [string, ...string[]]),
+  params: z.record(z.any()),
+});
 
 export async function route(question: string): Promise<RoutedQuery | null> {
   const prompt = [
@@ -26,15 +24,10 @@ export async function route(question: string): Promise<RoutedQuery | null> {
     catalogPromptSpec(),
     "",
     `QUESTION: ${question}`,
-    "",
-    'Return JSON: {"intent": <name|none>, "params": { ... }}',
   ].join("\n");
 
-  const out = await generateJson<{ intent: string; params: Record<string, unknown> }>(
-    prompt,
-    ROUTER_SCHEMA
-  );
+  const out = await generateJson(prompt, RouterSchema);
   if (!out || out.intent === "none") return null;
   if (!(INTENT_NAMES as readonly string[]).includes(out.intent)) return null;
-  return { intent: out.intent as RoutedQuery["intent"], params: out.params ?? {} };
+  return { intent: out.intent as RoutedQuery["intent"], params: (out.params ?? {}) as Record<string, unknown> };
 }

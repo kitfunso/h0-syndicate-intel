@@ -4,7 +4,7 @@ Lloyd's of London syndicate intelligence. Ask the market a question in plain Eng
 get a ranked answer where every number is cited to its source report page.
 
 Built for the H0 hackathon (Vercel v0 + AWS Databases). Stack: Next.js on Vercel,
-Aurora PostgreSQL + pgvector, Gemini via Vertex AI.
+Aurora PostgreSQL + pgvector, Claude + Titan via AWS Bedrock (Vercel AI SDK).
 
 > Full design + locked plan: `~/.gstack/projects/h0-syndicate-intel/skf_s-main-locked-plan-20260608.md`
 
@@ -12,11 +12,11 @@ Aurora PostgreSQL + pgvector, Gemini via Vertex AI.
 
 ```
 NL question
-  -> Gemini ROUTER (structured output) => {intent, params}     no SQL from the model, ever
+  -> Bedrock Claude ROUTER (structured output) => {intent, params}   no SQL from the model, ever
   -> validator: intent in catalog? params allowlisted?         reject => graceful degrade
   -> named parameterized SQL on a READ-ONLY role               statement_timeout + LIMIT
      + scoped pgvector retrieval for narrative + citations
-  -> Gemini COMPOSER: numbers from rows, narrative from chunks, every claim cited
+  -> Bedrock Claude COMPOSER: numbers from rows, narrative from chunks, every claim cited
   -> answer => each number links to its source report page
 ```
 
@@ -33,16 +33,15 @@ provenance columns, so a figure cannot be hallucinated.
    ```
 2. Provision Aurora PostgreSQL via the Vercel dashboard (Marketplace -> AWS -> Aurora
    PostgreSQL). Enable pgvector. Auth in production is OIDC + RDS IAM (no stored secret).
-3. Auth to Vertex locally:
-   ```bash
-   gcloud auth application-default login   # or set GOOGLE_APPLICATION_CREDENTIALS
-   ```
+3. Enable Bedrock model access (one-time): AWS console -> Bedrock -> Model access ->
+   enable Anthropic Claude + Amazon Titan Text Embeddings v2. The app reads AWS creds
+   from the standard chain (AWS_REGION + key/secret, or the Vercel AWS integration in prod).
 4. Copy env + fill it:
    ```bash
    cp .env.example .env.local      # PowerShell: Copy-Item .env.example .env.local
    ```
-   Set `GOOGLE_CLOUD_PROJECT`, `DATABASE_URL` (owner), `READONLY_DATABASE_URL`, and the
-   `GEMINI_MODEL` to your current Gemini 3 flash model ID.
+   Set `AWS_REGION` + AWS creds, `BEDROCK_CHAT_MODEL`, `DATABASE_URL` (owner), and
+   `READONLY_DATABASE_URL`.
 5. Migrate + set the read-only role's password:
    ```bash
    npm run migrate

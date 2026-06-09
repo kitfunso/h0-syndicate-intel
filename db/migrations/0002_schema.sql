@@ -82,7 +82,7 @@ CREATE TABLE report_chunk (
   section    text,                                     -- e.g. 'Managing Agent's Report'
   text       text NOT NULL,
   tsv        tsvector GENERATED ALWAYS AS (to_tsvector('english', text)) STORED,
-  embedding  vector(768)                               -- gemini-embedding-001 @ 768 dims
+  embedding  vector(1024)                              -- Bedrock Titan Text Embeddings v2 @ 1024 dims
 );
 
 -- Currency normalisation: multiply a native-currency amount by rate_to_gbp to get GBP.

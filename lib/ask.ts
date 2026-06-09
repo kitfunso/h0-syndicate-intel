@@ -14,7 +14,7 @@ import { validateRouted } from "./intents/validator";
 import { CATALOG } from "./intents/catalog";
 import { compose } from "./compose";
 import { execReadOnly } from "./db";
-import { embedQuery } from "./vertex";
+import { embedQuery } from "./llm";
 import { rowLimit, type AskResult, type IntentContext } from "./intents/types";
 
 const SUGGESTIONS = [
