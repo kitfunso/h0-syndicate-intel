@@ -46,5 +46,5 @@ Deadline: **June 29, 2026, 5:00pm PDT** (h01.devpost.com). Track: **Monetizable 
 - [x] MIT LICENSE present; `package.json` license field MIT
 - [x] Production build passes (`npm run build`)
 - [x] Tests green: 13 unit + 8 real-DB integration
-- [ ] Repo public on GitHub under kitfunso
+- [x] Repo public on GitHub: https://github.com/kitfunso/h0-syndicate-intel
 - [ ] Final read of README on GitHub (images render, no broken links)
