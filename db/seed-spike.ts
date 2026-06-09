@@ -109,13 +109,17 @@ async function main() {
         ).rows[0].id;
 
         const chunks = reportYear.chunks ?? [];
-        if (chunks.length && !skipEmbed) {
-          const vectors = await embedTexts(chunks.map((c) => c.text));
+        if (chunks.length) {
+          // Insert narrative TEXT always (the tsv keyword index works offline, no Bedrock);
+          // attach embeddings only when available. Idempotent: clear this report's chunks first.
+          await client.query(`DELETE FROM report_chunk WHERE report_id = $1`, [primaryReportId]);
+          const vectors = skipEmbed ? null : await embedTexts(chunks.map((c) => c.text));
           for (let i = 0; i < chunks.length; i++) {
+            const emb = vectors ? toVectorLiteral(vectors[i]) : null;
             await client.query(
               `INSERT INTO report_chunk (report_id, page_no, section, text, embedding)
                VALUES ($1,$2,$3,$4,$5::vector)`,
-              [primaryReportId, chunks[i].page_no, chunks[i].section, chunks[i].text, toVectorLiteral(vectors[i])]
+              [primaryReportId, chunks[i].page_no, chunks[i].section, chunks[i].text, emb]
             );
           }
         }

@@ -36,7 +36,11 @@ gcp-key*.json
 /data/dataset/
 
 # local data-prep tools (reference the local Synth DB + absolute PDF paths)
-/scripts/synth-*.ts
+/scripts/synth-*
+
+# private design references (e.g. the M&G market-opportunity strategy deck) — local only,
+# not part of the public submission until explicitly cleared
+/docs/private/
 
 # vercel
 .vercel

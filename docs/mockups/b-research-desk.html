@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Ask the Market — Research desk</title>
+<style>
+  :root{
+    --bg:#f3efe6; --panel:#fbf9f4; --ink:#1c1a16; --muted:#6b6557;
+    --line:#e2dac9; --claret:#7a2230; --navy:#1f3a5f; --gold:#b07d2b;
+    --serif:Georgia,"Iowan Old Style","Times New Roman",serif;
+    --sans:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+    --mono:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:14px;line-height:1.5}
+  .wrap{max-width:1280px;margin:0 auto;padding:30px 36px 44px}
+  .masthead{border-bottom:2px solid var(--ink);padding-bottom:14px;margin-bottom:8px;
+    display:flex;align-items:flex-end;justify-content:space-between}
+  .masthead h1{font-family:var(--serif);font-size:30px;font-weight:700;margin:0;letter-spacing:-.4px}
+  .masthead .kicker{font-family:var(--serif);font-style:italic;color:var(--muted);font-size:14px;margin-top:4px}
+  .issue{text-align:right;color:var(--muted);font-size:11.5px;font-family:var(--mono);letter-spacing:.3px;line-height:1.7}
+  .issue .on{color:var(--claret);font-weight:700}
+  .lede{font-family:var(--serif);font-size:22px;line-height:1.4;margin:20px 0 6px;max-width:60ch}
+  .lede .q{color:var(--claret)}
+  .ask{display:flex;align-items:center;gap:12px;border:1px solid var(--line);border-bottom:2px solid var(--navy);
+    background:var(--panel);border-radius:4px;padding:13px 16px;margin:14px 0 6px}
+  .ask input{flex:1;border:0;outline:0;background:transparent;font-family:var(--serif);font-size:17px;font-style:italic;color:var(--ink)}
+  .ask .go{font-family:var(--sans);background:var(--navy);color:#fff;border:0;border-radius:3px;padding:9px 18px;font-weight:600;font-size:13px;cursor:pointer}
+  .byline{color:var(--muted);font-size:12px;font-style:italic;font-family:var(--serif);margin:0 2px 22px}
+  .rule{border:0;border-top:1px solid var(--line);margin:22px 0}
+  .tiles{display:grid;grid-template-columns:repeat(4,1fr);gap:0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+  .tile{padding:16px 18px;border-right:1px solid var(--line)}
+  .tile:last-child{border-right:0}
+  .tile .k{font-family:var(--serif);font-style:italic;color:var(--muted);font-size:12.5px}
+  .tile .v{font-family:var(--serif);font-size:30px;font-weight:700;margin-top:5px;letter-spacing:-.5px}
+  .tile .d{font-size:11px;color:var(--muted);margin-top:2px}
+  .tile.macro .v{color:var(--navy)}
+  .tile.macro .tag{font-family:var(--mono);font-size:9px;letter-spacing:.4px;color:var(--gold);text-transform:uppercase}
+  .cols{display:grid;grid-template-columns:1.3fr 1fr;gap:34px;margin-top:24px}
+  h2.sec{font-family:var(--serif);font-size:19px;font-weight:700;margin:0 0 2px;letter-spacing:-.2px}
+  .dek{font-family:var(--serif);font-style:italic;color:var(--muted);font-size:13px;margin:0 0 14px}
+  .scat-axis{stroke:#cfc6b3}
+  .scat-q{fill:var(--muted);font-size:10.5px;font-style:italic;font-family:var(--serif)}
+  .pt{fill:var(--claret)}
+  .pt.big{fill:var(--navy)}
+  .pl{font-family:var(--serif);font-size:11.5px;fill:var(--ink);font-weight:700}
+  .ps{font-family:var(--mono);font-size:9.5px;fill:var(--muted)}
+  table{width:100%;border-collapse:collapse}
+  th{text-align:left;font-family:var(--serif);font-style:italic;color:var(--muted);font-size:12.5px;font-weight:400;padding:0 4px 8px}
+  td{padding:9px 4px;border-top:1px solid var(--line);font-size:13.5px;vertical-align:baseline}
+  td.num{font-family:var(--mono);text-align:right;font-variant-numeric:tabular-nums}
+  .nm{font-family:var(--serif);font-size:15px}
+  .nm sup{color:var(--claret);font-size:10px}
+  .nm small{display:block;color:var(--muted);font-size:11px}
+  .notes{margin-top:14px;border-top:1px solid var(--line);padding-top:10px}
+  .notes div{font-size:11.5px;color:var(--muted);font-family:var(--serif);margin-bottom:4px}
+  .notes sup{color:var(--claret)}
+  .notes a{color:var(--navy);text-decoration:underline dotted;cursor:pointer}
+  .quote{margin-top:18px;border-left:3px solid var(--claret);padding:4px 0 4px 16px}
+  .quote .src{font-family:var(--mono);font-size:10.5px;color:var(--muted);margin-bottom:4px}
+  .quote p{font-family:var(--serif);font-size:15px;line-height:1.5;margin:0}
+  .quote .hl{background:#f3e7c6;padding:0 2px;font-weight:700}
+  .foot{text-align:center;color:var(--muted);font-family:var(--serif);font-style:italic;font-size:12px;margin-top:26px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="masthead">
+    <div>
+      <h1>Ask the Market</h1>
+      <div class="kicker">A research desk for the Lloyd's of London syndicate market</div>
+    </div>
+    <div class="issue">2023 year of account<br><span class="on">GBP</span> / USD / EUR<br>5 syndicates covered</div>
+  </div>
+
+  <div class="lede"><span class="q">&ldquo;Which syndicates grew premium while improving their combined ratio?&rdquo;</span></div>
+  <div class="ask">
+    <input value="which syndicates grew premium while improving their combined ratio in 2023?" />
+    <button class="go">Ask</button>
+  </div>
+  <p class="byline">Answered from the filings in seconds. Every figure footnoted to its source report page.</p>
+
+  <div class="tiles">
+    <div class="tile"><div class="k">Average combined ratio</div><div class="v">83.6</div><div class="d">2023, five syndicates</div></div>
+    <div class="tile"><div class="k">Total gross premium</div><div class="v">&pound;4,904m</div><div class="d">GBP-normalised</div></div>
+    <div class="tile"><div class="k">Strongest underwriter</div><div class="v">75.1</div><div class="d">Asta, syndicate 2525</div></div>
+    <div class="tile macro"><div class="k">Market result before tax</div><div class="v">&pound;10.66bn</div><div class="tag">Lloyd's market aggregate</div></div>
+  </div>
+
+  <div class="cols">
+    <div>
+      <h2 class="sec">Grew and improved</h2>
+      <p class="dek">Gross premium growth against combined-ratio improvement, 2022 to 2023.</p>
+      <svg viewBox="0 0 540 270" width="100%" height="270">
+        <line class="scat-axis" x1="60" y1="250" x2="520" y2="250"/>
+        <line class="scat-axis" x1="60" y1="30" x2="60" y2="250"/>
+        <text class="scat-q" x="516" y="265" text-anchor="end">premium growth (&pound;m)</text>
+        <text class="scat-q" x="52" y="42" text-anchor="end" transform="rotate(-90 52 42)">combined-ratio improvement (pts)</text>
+        <circle class="pt big" cx="480" cy="39" r="8"/>
+        <text class="pl" x="468" y="34" text-anchor="end">MS Amlin</text>
+        <text class="ps" x="468" y="46" text-anchor="end">+&pound;172m / -9.6</text>
+        <circle class="pt" cx="282" cy="72" r="6.5"/>
+        <text class="pl" x="292" y="69">Ascot</text><text class="ps" x="292" y="80">+&pound;91m / -8.1</text>
+        <circle class="pt" cx="157" cy="111" r="6.5"/>
+        <text class="pl" x="167" y="108">Tokio M. Kiln</text><text class="ps" x="167" y="119">+&pound;40m / -6.3</text>
+        <circle class="pt" cx="87" cy="78" r="6.5"/>
+        <text class="pl" x="97" y="75">Asta</text><text class="ps" x="97" y="86">+&pound;11m / -7.8</text>
+        <circle class="pt" cx="298" cy="166" r="6.5"/>
+        <text class="pl" x="308" y="163">Talbot</text><text class="ps" x="308" y="174">+&pound;97m / -3.8 (USD)</text>
+      </svg>
+      <div class="quote">
+        <div class="src">MS Amlin &middot; Syndicate 2001 Annual Report 2023, p.28</div>
+        <p>Gross written premium was <span class="hl">&pound;1,748.7m</span> (2022: &pound;1,576.8m), an increase of 10.9% reflecting rate strength across property and specialty lines.</p>
+      </div>
+    </div>
+
+    <div>
+      <h2 class="sec">By combined ratio</h2>
+      <p class="dek">Lowest (strongest) first.</p>
+      <table>
+        <thead><tr><th>Syndicate</th><th style="text-align:right">CR</th><th style="text-align:right">GWP</th></tr></thead>
+        <tbody>
+          <tr><td class="nm">Asta 2525<sup>1</sup><small>Asta Managing Agency</small></td><td class="num">75.1</td><td class="num">&pound;133.1m</td></tr>
+          <tr><td class="nm">Talbot 1183<sup>2</sup><small>Talbot Underwriting</small></td><td class="num">84.4</td><td class="num">$1,414.7m</td></tr>
+          <tr><td class="nm">Tokio M. Kiln 1880<sup>3</sup><small>Tokio Marine Kiln</small></td><td class="num">85.5</td><td class="num">&pound;444.1m</td></tr>
+          <tr><td class="nm">Ascot 1414<sup>4</sup><small>Ascot Underwriting</small></td><td class="num">86.6</td><td class="num">&pound;1,440.9m</td></tr>
+          <tr><td class="nm">MS Amlin 2001<sup>5</sup><small>MS Amlin Underwriting</small></td><td class="num">86.6</td><td class="num">&pound;1,748.7m</td></tr>
+        </tbody>
+      </table>
+      <div class="notes">
+        <div><sup>1</sup> Syndicate 2525 AR 2023, <a>p.7</a> &middot; <sup>2</sup> 1183 AR 2023, <a>p.5</a> (USD) &middot; <sup>3</sup> 1880 AR 2023, <a>p.5</a></div>
+        <div><sup>4</sup> Syndicate 1414 AR 2023, <a>p.5</a> &middot; <sup>5</sup> 2001 AR 2023, <a>p.7</a> (group-adjusted)</div>
+      </div>
+    </div>
+  </div>
+  <div class="foot">Numbers from the filings, citations to the page. Aurora PostgreSQL with pgvector, served on Vercel.</div>
+</div>
+</body>
+</html>
