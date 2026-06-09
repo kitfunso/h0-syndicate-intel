@@ -4,6 +4,8 @@
  */
 import { describe, it, expect } from "vitest";
 import { validateRouted } from "../lib/intents/validator";
+import { CATALOG } from "../lib/intents/catalog";
+import { INTENT_NAMES } from "../lib/intents/types";
 
 describe("validateRouted", () => {
   it("accepts a well-formed rank_syndicates query", () => {
@@ -65,5 +67,45 @@ describe("validateRouted", () => {
       params: { topic: "social inflation in casualty", keyword: "casualty" },
     });
     expect(r.ok).toBe(true);
+  });
+
+  it("accepts compare with 2+ syndicates", () => {
+    const r = validateRouted({
+      intent: "compare",
+      params: { syndicate_numbers: [1183, 1414], year_of_account: 2023 },
+    });
+    expect(r.ok).toBe(true);
+  });
+
+  it("rejects compare with a single syndicate", () => {
+    const r = validateRouted({
+      intent: "compare",
+      params: { syndicate_numbers: [1183], year_of_account: 2023 },
+    });
+    expect(r.ok).toBe(false);
+  });
+
+  it("accepts growers_improvers", () => {
+    const r = validateRouted({
+      intent: "growers_improvers",
+      params: { year_from: 2022, year_to: 2023 },
+    });
+    expect(r.ok).toBe(true);
+  });
+
+  it("rejects peer_percentile with a metric outside its allowlist", () => {
+    const r = validateRouted({
+      intent: "peer_percentile",
+      params: { syndicate_number: 1183, metric: "net_earned_premium", year_of_account: 2023 },
+    });
+    expect(r.ok).toBe(false);
+  });
+
+  it("every registered intent has a catalog entry with a schema", () => {
+    for (const name of INTENT_NAMES) {
+      expect(CATALOG[name]).toBeDefined();
+      expect(CATALOG[name].schema).toBeDefined();
+      expect(CATALOG[name].name).toBe(name);
+    }
   });
 });

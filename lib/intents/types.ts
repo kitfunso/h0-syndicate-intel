@@ -27,7 +27,16 @@ export const LINES_OF_BUSINESS = [
   "Specialty",
 ] as const;
 
-export const INTENT_NAMES = ["rank_syndicates", "trend", "narrative_search"] as const;
+export const INTENT_NAMES = [
+  "rank_syndicates",
+  "trend",
+  "compare",
+  "growers_improvers",
+  "peer_percentile",
+  "market_overview",
+  "explain_change",
+  "narrative_search",
+] as const;
 export type IntentName = (typeof INTENT_NAMES)[number];
 
 /** A compiled analytical query: a fixed SQL template + bound params. */
