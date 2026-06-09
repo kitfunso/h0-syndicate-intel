@@ -30,7 +30,7 @@ function shortName(full: string): string {
   const words = full.split(/\s+/);
   const keep: string[] = [];
   for (const w of words) {
-    if (STOP.has(w.replace(/[.,]/g, ""))) break;
+    if (STOP.has(w.replace(/[(),.]/g, ""))) break;
     keep.push(w);
   }
   return (keep.length ? keep : [words[0]]).join(" ");
@@ -49,8 +49,11 @@ function excerpt(t: string, max = 260): string {
   return (end > 120 ? cut.slice(0, end + 1) : cut.trim()) + " …";
 }
 
-type ScatterPt = { syn: number; name: string; x: number; y: number; left: boolean; px: number; py: number; r: number };
+type ScatterPt = { syn: number; name: string; x: number; y: number; left: boolean; px: number; py: number; r: number; labeled: boolean };
 
+// Rows arrive ordered by GWP growth desc. Greedy label placement: biggest growers
+// get labels first, and a label is dropped if its box would collide with one already
+// placed (max 8). Unlabeled points keep a hover title.
 function buildScatter(rows: Record<string, unknown>[]): ScatterPt[] {
   const pts = rows.map((r) => ({
     syn: n(r.syndicate_number),
@@ -61,10 +64,17 @@ function buildScatter(rows: Record<string, unknown>[]): ScatterPt[] {
   const xMax = Math.max(1, ...pts.map((p) => p.x)) * 1.14;
   const yMax = Math.max(1, ...pts.map((p) => p.y)) * 1.18;
   const X0 = 60, X1 = 520, Y0 = 250, Y1 = 34;
-  return pts.map((p) => {
+  const placed: Array<{ x: number; y: number }> = [];
+  const LW = 110, LH = 26; // approximate label box
+  return pts.map((p, i) => {
     const px = X0 + (p.x / xMax) * (X1 - X0);
     const py = Y0 - (p.y / yMax) * (Y0 - Y1);
-    return { ...p, px, py, r: p.x >= (xMax / 1.14) * 0.92 ? 8 : 6.5, left: px > 430 };
+    const left = px > 430;
+    const ax = left ? px - 12 - LW : px + 12; // label box origin
+    const collides = placed.some((b) => Math.abs(b.x - ax) < LW && Math.abs(b.y - py) < LH);
+    const labeled = i < 8 && placed.length < 8 && !collides;
+    if (labeled) placed.push({ x: ax, y: py });
+    return { ...p, px, py, r: p.x >= (xMax / 1.14) * 0.92 ? 8 : 6.5, left, labeled };
   });
 }
 
@@ -77,7 +87,9 @@ export default async function Home({ searchParams }: { searchParams: Promise<Rec
   const sym = CURRENCY_SYMBOL[ccy];
   const fullYear = year === REPORT_YEAR; // 2023 has scatter + narrative + source-page images
 
-  const d = await buildDashboard({ year, yearFrom: year - 1, yearTo: year, limit: 12 });
+  // Fetch the full market (covers every league row's GWP lookup); display slices below.
+  const d = await buildDashboard({ year, yearFrom: year - 1, yearTo: year, limit: 50 });
+  const LEAGUE_ROWS = 12;
   const macroAll = await getMarketSeries().catch(() => []);
   const result2023 =
     macroAll.find((s) => s.series_key === "result_before_tax")?.points.find((p) => p.year === REPORT_YEAR)?.value ?? null;
@@ -91,7 +103,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<Rec
     d.rank_by_gwp.map((r) => [n(r.syndicate_number), r])
   );
 
-  const league: LeagueRow[] = d.rank_by_combined_ratio.map((r) => {
+  const league: LeagueRow[] = d.rank_by_combined_ratio.slice(0, LEAGUE_ROWS).map((r) => {
     const snum = n(r.syndicate_number);
     const g = gwpBySyn.get(snum);
     const q = quotes[snum];
@@ -145,9 +157,16 @@ export default async function Home({ searchParams }: { searchParams: Promise<Rec
                 <text className="scat-q" x="52" y="42" textAnchor="end" transform="rotate(-90 52 42)">combined-ratio improvement (pts)</text>
                 {scatter.map((p) => (
                   <g key={p.syn}>
-                    <circle className={p.r >= 8 ? "pt big" : "pt"} cx={p.px} cy={p.py} r={p.r} />
-                    <text className="pl" x={p.left ? p.px - 12 : p.px + 12} y={p.py - 5} textAnchor={p.left ? "end" : "start"}>{p.name}</text>
-                    <text className="ps" x={p.left ? p.px - 12 : p.px + 12} y={p.py + 7} textAnchor={p.left ? "end" : "start"}>+{dispM(p.x, rate, sym)} / -{p.y.toFixed(1)}</text>
+                    <circle className={p.r >= 8 ? "pt big" : "pt"} cx={p.px} cy={p.py} r={p.r}>
+                      {/* single text node: multi-part children inside an SVG title hydrate inconsistently */}
+                      <title>{`${p.name} ${p.syn}: +${dispM(p.x, rate, sym)} / -${p.y.toFixed(1)} pts`}</title>
+                    </circle>
+                    {p.labeled && (
+                      <>
+                        <text className="pl" x={p.left ? p.px - 12 : p.px + 12} y={p.py - 5} textAnchor={p.left ? "end" : "start"}>{p.name}</text>
+                        <text className="ps" x={p.left ? p.px - 12 : p.px + 12} y={p.py + 7} textAnchor={p.left ? "end" : "start"}>+{dispM(p.x, rate, sym)} / -{p.y.toFixed(1)}</text>
+                      </>
+                    )}
                   </g>
                 ))}
               </svg>

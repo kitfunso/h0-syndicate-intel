@@ -26,6 +26,8 @@ export async function getReportQuotes(synNums: number[]): Promise<Record<number,
       WHERE r.syndicate_number = ANY($1::int[])
         AND length(rc.text) > 300
         AND rc.text NOT ILIKE '%Annual Report and Accounts%'
+        -- prose, not tables: keep chunks under ~12% digit density
+        AND length(regexp_replace(rc.text, '[0-9]', '', 'g'))::float / length(rc.text) > 0.88
         AND rc.tsv @@ to_tsquery('english', $2)
       ORDER BY r.syndicate_number, ts_rank(rc.tsv, to_tsquery('english', $2)) DESC`,
     params: [synNums, TQ],

@@ -165,6 +165,9 @@ const growers: IntentDef = {
         WHERE a.year_of_account = $1 AND b.year_of_account = $2
           AND a.gwp_gbp IS NOT NULL AND b.gwp_gbp IS NOT NULL
           AND a.combined_ratio IS NOT NULL AND b.combined_ratio IS NOT NULL
+          -- like-for-like only: an "improvement" vs a differently-adjusted prior-year
+          -- ratio (e.g. an excluding-LPT 2022 basis) is an artifact, not a comparison
+          AND a.combined_ratio_adjusted = b.combined_ratio_adjusted
           AND b.gwp_gbp > a.gwp_gbp AND b.combined_ratio < a.combined_ratio
         ORDER BY (b.gwp_gbp - a.gwp_gbp) DESC LIMIT ${cap}`,
       params: [p.year_from, p.year_to],
