@@ -128,7 +128,7 @@ async function main() {
         );
 
         const chunks = y.chunks ?? [];
-        if (chunks.length && reportId != null) {
+        if (chunks.length && reportId != null && process.env.SKIP_EMBED !== "1") {
           const vectors = await embedTexts(chunks.map((c) => c.text));
           for (let i = 0; i < chunks.length; i++) {
             await client.query(
