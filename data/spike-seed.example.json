@@ -1,45 +1,37 @@
-[
-  {
-    "syndicate_number": 2623,
-    "name": "Beazley",
-    "managing_agent": "Beazley Furlonge Ltd",
-    "inception_year": 1995,
-    "years": [
-      {
-        "year_of_account": 2023,
-        "facts": {
-          "capacity_gbp": 2000000000,
-          "gwp_gbp": 1850000000,
-          "nwp_gbp": 1400000000,
-          "combined_ratio": 0.78,
-          "result_gbp": 320000000,
-          "return_on_capacity": 0.16,
-          "source_page": 12,
-          "verified": true
-        },
-        "lob": [
-          {
-            "line_of_business": "Cyber",
-            "gwp_gbp": 600000000,
-            "loss_ratio": 0.55,
-            "combined_ratio": 0.82,
-            "source_page": 34,
-            "verified": true
-          }
-        ],
-        "report": {
-          "title": "Syndicate 2623 Annual Report 2023",
-          "source_url": "https://www.example.com/2623-2023.pdf",
-          "n_pages": 80
-        },
-        "chunks": [
-          {
-            "page_no": 12,
-            "section": "Active Underwriter Statement",
-            "text": "The 2023 year of account delivered a combined ratio of 78%, driven by strong rate adequacy in cyber and a benign large-loss environment..."
-          }
-        ]
-      }
-    ]
-  }
-]
+{
+  "_comment": "Shape produced by scripts/synth-to-seed.ts. Monetary values are NATIVE currency in MILLIONS; seed-spike computes GBP via fx_rate. The real file (spike-seed.json) is gitignored.",
+  "fx_rates": [
+    { "currency": "GBP", "year_of_account": 2023, "rate_to_gbp": 1 },
+    { "currency": "USD", "year_of_account": 2023, "rate_to_gbp": 0.8039 }
+  ],
+  "syndicates": [
+    {
+      "syndicate_number": 1183,
+      "name": "Talbot Underwriting Ltd",
+      "managing_agent": "Talbot Underwriting Ltd",
+      "inception_year": null,
+      "years": [
+        {
+          "year_of_account": 2023,
+          "currency": "USD",
+          "combined_ratio": 84.4,
+          "combined_ratio_adjusted": false,
+          "combined_ratio_page": 5,
+          "gwp_native": 1414.7,
+          "gwp_page": 15,
+          "nep_native": 946.2,
+          "nep_page": 15,
+          "verified": true,
+          "report": {
+            "title": "Syndicate 1183 Annual Report 2023",
+            "source_url": "https://assets.lloyds.com/...1183...2023.pdf",
+            "n_pages": 60
+          },
+          "chunks": [
+            { "page_no": 5, "section": "Financial highlights", "text": "Combined ratio of 84.4% ..." }
+          ]
+        }
+      ]
+    }
+  ]
+}

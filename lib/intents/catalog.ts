@@ -1,15 +1,19 @@
 /**
  * The intent catalog: the ONLY queries that can run. Each entry pairs a zod param
- * schema (the validator) with a `run` that builds a FIXED, parameterized SQL
- * template (identifiers from allowlists, values bound) and maps rows to citations.
+ * schema (the validator) with a `run` that builds a FIXED, parameterized SQL template
+ * (identifiers from allowlists, values bound) and maps rows to citations.
  *
- * Spike scope = 3 intents (rank / trend / narrative_search). Days 4-7 add the rest
- * (compare, lob_breakdown, peer_percentile, growers_improvers, explain_change, ...).
+ * Monetary metrics rank on their GBP-normalised value (gwp_gbp / nep_gbp) but return
+ * the NATIVE value + currency + page too, so the UI shows the figure exactly as the
+ * PDF prints it (with a currency badge) and a clicked number always matches the source.
+ *
+ * Spike scope = 3 intents. Days 4-7 add compare / lob_breakdown / peer_percentile /
+ * growers_improvers / explain_change.
  */
 import { z } from "zod";
 import {
   METRICS,
-  LINES_OF_BUSINESS,
+  type Metric,
   type Citation,
   type IntentContext,
   type IntentName,
@@ -18,55 +22,71 @@ import {
 
 export type IntentDef = {
   name: IntentName;
-  description: string; // shown to the router so it can pick correctly
-  paramsHint: string; // human description of params for the router prompt
+  description: string;
+  paramsHint: string;
   schema: z.ZodTypeAny;
   run: (params: any, ctx: IntentContext) => Promise<{ rows: AskRow[]; citations: Citation[] }>;
 };
 
 const metricEnum = z.enum(METRICS);
-const lobEnum = z.enum(LINES_OF_BUSINESS);
 
-function toVectorLiteral(values: number[]): string {
-  return `[${values.join(",")}]`;
+// Maps an allowlisted metric to fixed column expressions (alias `sy`). Safe to
+// interpolate: the value is validated to one of METRICS, never raw user text.
+function metricSql(metric: Metric): {
+  value: string;
+  native: string;
+  page: string;
+  dir: "ASC" | "DESC";
+} {
+  switch (metric) {
+    case "combined_ratio":
+      return { value: "sy.combined_ratio", native: "NULL::numeric", page: "sy.combined_ratio_page", dir: "ASC" };
+    case "gwp":
+      return { value: "sy.gwp_gbp", native: "sy.gwp_native", page: "sy.gwp_page", dir: "DESC" };
+    case "net_earned_premium":
+      return { value: "sy.nep_gbp", native: "sy.nep_native", page: "sy.nep_page", dir: "DESC" };
+  }
+}
+
+function toCitations(rows: AskRow[], synKey = "syndicate_number"): Citation[] {
+  return rows.map((r) => ({
+    report_id: Number(r.source_report_id),
+    page_no: r.source_page == null ? null : Number(r.source_page),
+    syndicate_number: r[synKey] == null ? null : Number(r[synKey]),
+  }));
 }
 
 // ---- rank_syndicates ------------------------------------------------------
 const rankSchema = z.object({
   metric: metricEnum,
   year_of_account: z.number().int().gte(1990).lte(2030),
-  order: z.enum(["asc", "desc"]).default("desc"),
+  order: z.enum(["asc", "desc"]).optional(),
   limit: z.number().int().gte(1).lte(100).optional(),
 });
 
 const rank: IntentDef = {
   name: "rank_syndicates",
-  description: "League table: rank syndicates by a single metric for one year of account.",
-  paramsHint: `{ metric: one of ${METRICS.join("|")}, year_of_account: int, order: "asc"|"desc", limit?: int }`,
+  description:
+    "League table: rank syndicates by a metric for one year. combined_ratio asc = best underwriters; gwp/net_earned_premium desc = largest. Monetary metrics are GBP-normalised.",
+  paramsHint: `{ metric: ${METRICS.join("|")}, year_of_account: int, order?: "asc"|"desc", limit?: int }`,
   schema: rankSchema,
   run: async (p: z.infer<typeof rankSchema>, ctx) => {
-    const metric = p.metric; // allowlisted literal -> safe identifier
-    const dir = p.order === "asc" ? "ASC" : "DESC";
+    const m = metricSql(p.metric);
+    const dir = p.order ? (p.order === "asc" ? "ASC" : "DESC") : m.dir;
     const cap = Math.min(p.limit ?? ctx.rowLimit, ctx.rowLimit);
     const rows = await ctx.execReadOnly({
       text: `
-        SELECT s.syndicate_number, s.name, sy.year_of_account,
-               sy.${metric} AS value, sy.source_report_id, sy.source_page, sy.verified
+        SELECT s.syndicate_number, s.name, sy.year_of_account, sy.currency,
+               ${m.value} AS value_gbp, ${m.native} AS value_native,
+               ${m.page} AS source_page, sy.source_report_id, sy.verified
         FROM syndicate_year sy
         JOIN syndicate s USING (syndicate_number)
-        WHERE sy.year_of_account = $1 AND sy.${metric} IS NOT NULL
-        ORDER BY sy.${metric} ${dir}
+        WHERE sy.year_of_account = $1 AND ${m.value} IS NOT NULL
+        ORDER BY ${m.value} ${dir}
         LIMIT ${cap}`,
       params: [p.year_of_account],
     });
-    return {
-      rows,
-      citations: rows.map((r) => ({
-        report_id: Number(r.source_report_id),
-        page_no: r.source_page == null ? null : Number(r.source_page),
-        syndicate_number: Number(r.syndicate_number),
-      })),
-    };
+    return { rows, citations: toCitations(rows) };
   },
 };
 
@@ -81,36 +101,36 @@ const trendSchema = z.object({
 const trend: IntentDef = {
   name: "trend",
   description: "Time series of one metric for one syndicate across a year range.",
-  paramsHint: `{ syndicate_number: int, metric: one of ${METRICS.join("|")}, year_from: int, year_to: int }`,
+  paramsHint: `{ syndicate_number: int, metric: ${METRICS.join("|")}, year_from: int, year_to: int }`,
   schema: trendSchema,
   run: async (p: z.infer<typeof trendSchema>, ctx) => {
-    const metric = p.metric;
+    const m = metricSql(p.metric);
     const rows = await ctx.execReadOnly({
       text: `
-        SELECT year_of_account, ${metric} AS value, source_report_id, source_page, verified
-        FROM syndicate_year
-        WHERE syndicate_number = $1 AND year_of_account BETWEEN $2 AND $3
-        ORDER BY year_of_account`,
+        SELECT sy.syndicate_number, sy.year_of_account, sy.currency,
+               ${m.value} AS value_gbp, ${m.native} AS value_native,
+               ${m.page} AS source_page, sy.source_report_id, sy.verified
+        FROM syndicate_year sy
+        WHERE sy.syndicate_number = $1 AND sy.year_of_account BETWEEN $2 AND $3
+          AND ${m.value} IS NOT NULL
+        ORDER BY sy.year_of_account`,
       params: [p.syndicate_number, p.year_from, p.year_to],
     });
-    return {
-      rows,
-      citations: rows.map((r) => ({
-        report_id: Number(r.source_report_id),
-        page_no: r.source_page == null ? null : Number(r.source_page),
-        syndicate_number: p.syndicate_number,
-      })),
-    };
+    return { rows, citations: toCitations(rows) };
   },
 };
 
 // ---- narrative_search (the qualitative pillar) ----------------------------
 const narrativeSchema = z.object({
   topic: z.string().min(2).max(400),
-  keyword: z.string().max(80).optional(), // anchors retrieval, beats boilerplate
+  keyword: z.string().max(80).optional(),
   syndicate_number: z.number().int().optional(),
   k: z.number().int().gte(1).lte(20).optional(),
 });
+
+function toVectorLiteral(values: number[]): string {
+  return `[${values.join(",")}]`;
+}
 
 const narrative: IntentDef = {
   name: "narrative_search",

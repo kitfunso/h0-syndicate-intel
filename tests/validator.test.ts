@@ -14,6 +14,14 @@ describe("validateRouted", () => {
     expect(r.ok).toBe(true);
   });
 
+  it("accepts a monetary rank (gwp)", () => {
+    const r = validateRouted({
+      intent: "rank_syndicates",
+      params: { metric: "gwp", year_of_account: 2023 },
+    });
+    expect(r.ok).toBe(true);
+  });
+
   it("rejects an unknown intent", () => {
     const r = validateRouted({ intent: "drop_everything", params: {} });
     expect(r.ok).toBe(false);
@@ -30,7 +38,7 @@ describe("validateRouted", () => {
   it("rejects a wrong-typed param (string where int expected)", () => {
     const r = validateRouted({
       intent: "trend",
-      params: { syndicate_number: "2623 OR 1=1", metric: "gwp_gbp", year_from: 2020, year_to: 2024 },
+      params: { syndicate_number: "1183 OR 1=1", metric: "gwp", year_from: 2020, year_to: 2024 },
     });
     expect(r.ok).toBe(false);
   });
@@ -38,7 +46,7 @@ describe("validateRouted", () => {
   it("rejects an out-of-range year", () => {
     const r = validateRouted({
       intent: "rank_syndicates",
-      params: { metric: "gwp_gbp", year_of_account: 9999 },
+      params: { metric: "gwp", year_of_account: 9999 },
     });
     expect(r.ok).toBe(false);
   });

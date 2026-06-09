@@ -32,7 +32,11 @@ gcp-key*.json
 
 # real seed data (extracted via Synth) stays out of git; only the .example.json is tracked
 /data/spike-seed.json
+/data/verified-figures.json
 /data/dataset/
+
+# local data-prep tools (reference the local Synth DB + absolute PDF paths)
+/scripts/synth-*.ts
 
 # vercel
 .vercel

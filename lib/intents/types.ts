@@ -2,21 +2,19 @@
  * Shared types + allowlists for the intent layer.
  *
  * SAFETY MODEL: the LLM only ever chooses an intent name + params. It never writes
- * SQL. Column choices (metric, line of business, sort direction) are constrained to
- * the allowlisted literals below, so even the identifier injected into a query
- * template comes from a fixed set; all values are bound as parameters.
+ * SQL. Column choices (metric, sort direction, display currency) are constrained to
+ * the allowlisted literals below, so even an identifier injected into a query template
+ * comes from a fixed set; all values are bound as parameters.
  */
 
-// Metric names ARE the column names; validated to this enum before use as an identifier.
-export const METRICS = [
-  "gwp_gbp",
-  "nwp_gbp",
-  "combined_ratio",
-  "result_gbp",
-  "return_on_capacity",
-  "capacity_gbp",
-] as const;
+// Queryable metrics. combined_ratio is unitless (%); gwp/net_earned_premium are
+// monetary and ranked on their GBP-normalised value, displayed in any currency.
+export const METRICS = ["combined_ratio", "gwp", "net_earned_premium"] as const;
 export type Metric = (typeof METRICS)[number];
+
+// Currencies the UI can display in (native values converted via fx_rate).
+export const CURRENCIES = ["GBP", "USD", "EUR"] as const;
+export type Currency = (typeof CURRENCIES)[number];
 
 export const LINES_OF_BUSINESS = [
   "Property",
