@@ -137,6 +137,19 @@ h2.sec { font-family: var(--serif); font-size: 19px; font-weight: 700; margin: 0
 
 .foot { text-align: center; color: var(--muted); font-family: var(--serif); font-style: italic; font-size: 12px; margin-top: 28px; border-top: 1px solid var(--line); padding-top: 14px; }
 
+/* market research page */
+.m-sec { margin-top: 30px; border-top: 1px solid var(--line); padding-top: 18px; }
+.m-sec .macro-grid { margin-bottom: 18px; }
+.m-insight { font-family: var(--serif); font-style: italic; color: var(--muted); font-size: 12.5px; margin: 8px 0 0; line-height: 1.45; }
+.m-link { color: var(--navy); text-decoration: underline dotted; }
+.lt.mt th { text-align: right; padding: 0 8px 8px; }
+.lt.mt th:first-child { text-align: left; }
+.lt.mt td { font-size: 12.5px; padding: 7px 8px; }
+.mt-cat { font-family: var(--serif); font-size: 13.5px; }
+.m-explainer { margin-top: 22px; border-left: 3px solid var(--gold); padding: 4px 0 4px 16px; max-width: 75ch; }
+.m-explainer h3 { font-family: var(--serif); font-size: 15px; margin: 0 0 6px; }
+.m-explainer p { font-family: var(--serif); font-size: 13.5px; line-height: 1.6; color: #2e2a24; margin: 0; }
+
 /* peek actions + source-page viewer */
 .peek-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px; }
 .peek-actions button { background: var(--navy); color: #fff; border: 0; border-radius: 3px; padding: 7px 12px; font: inherit; font-size: 12px; cursor: pointer; }

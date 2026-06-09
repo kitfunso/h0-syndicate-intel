@@ -1,7 +1,7 @@
 {
   "as_of": "2026-06-09",
   "source": "Lloyd's market aggregate (2016-2024), transcribed from the market opportunity deck",
-  "_note": "MACRO context layer. Wide format: each series lists `years` once, then `categories` maps a sub-series label to a value array aligned to `years`. '' = single series. `units` overrides the series unit for specific categories (mixed-unit charts). Tracked in git (neutral market aggregates, needed by the deployed app); the M&G strategy narrative stays in the gitignored docs/private/opportunity-set.md.",
+  "_note": "MACRO context layer. Wide format: each series lists `years` once, then `categories` maps a sub-series label to a value array aligned to `years`. '' = single series. `units` overrides the series unit for specific categories (mixed-unit charts). Exact figures only: slide 30 (cash/currency proportions) is NOT seeded because the source gives approximations. Tracked in git (neutral market aggregates); the strategy narrative stays in the gitignored docs/private/opportunity-set.md.",
   "series": [
     {
       "series_key": "result_before_tax",
@@ -27,6 +27,34 @@
       }
     },
     {
+      "series_key": "gwp_yoy_by_line",
+      "series_label": "Gross written premium change, year on year",
+      "unit": "pct",
+      "chart_type": "table",
+      "source_slide": 22,
+      "years": [2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024],
+      "categories": {
+        "Property": [12, 8, -1, -4, 12, 25, 14, 8],
+        "Casualty": [19, 7, 4, -4, 6, 26, 8, 3],
+        "Marine, Aviation & Transport": [3, -1, -8, 5, -2, 32, 10, 5],
+        "Energy": [13, 12, 7, -16, 0, 19, 20, 8],
+        "Motor": [1, -2, 2, -32, -1, 26, -1, 14],
+        "Reinsurance": [12, 5, 3, 6, 18, 7, 13, 8],
+        "Total": [12, 6, 1, -1, 11, 19, 12, 7]
+      }
+    },
+    {
+      "series_key": "implied_de",
+      "series_label": "Implied debt-to-equity",
+      "unit": "ratio",
+      "chart_type": "line",
+      "source_slide": 22,
+      "years": [2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024],
+      "categories": {
+        "": [2.95, 3.41, 3.72, 3.38, 3.19, 3.13, 3.35, 2.92, 3.01]
+      }
+    },
+    {
       "series_key": "gwp_by_line",
       "series_label": "Gross written premium by line of business",
       "unit": "gbp_bn",
@@ -40,6 +68,54 @@
         "Energy": [1.11, 1.25, 1.40, 1.50, 1.27, 1.26, 1.51, 1.81, 1.96],
         "Motor": [1.05, 1.06, 1.04, 1.05, 0.72, 0.71, 0.90, 0.89, 1.02],
         "Reinsurance": [9.41, 10.56, 11.07, 11.42, 12.16, 14.34, 15.37, 17.34, 18.73]
+      }
+    },
+    {
+      "series_key": "liability_krd",
+      "series_label": "Liability key-rate durations (normalised)",
+      "unit": "ratio",
+      "chart_type": "stacked_area",
+      "source_slide": 26,
+      "years": [2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024],
+      "categories": {
+        "0-1 yrs": [0.859, 0.856, 0.841, 0.860, 0.871, 0.866, 0.865, 0.842, 0.832],
+        "1-3 yrs": [0.945, 0.925, 0.949, 0.921, 0.898, 0.920, 0.920, 0.953, 0.955],
+        "3-5 yrs": [0.432, 0.387, 0.404, 0.423, 0.402, 0.402, 0.399, 0.421, 0.430],
+        "Over 5 yrs": [0.463, 0.384, 0.396, 0.409, 0.384, 0.423, 0.416, 0.444, 0.435]
+      }
+    },
+    {
+      "series_key": "pv01",
+      "series_label": "Aggregate PV01: assets vs liabilities",
+      "unit": "gbp_m",
+      "chart_type": "line",
+      "source_slide": 27,
+      "years": [2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024],
+      "categories": {
+        "Liability PV01": [12.89, 14.01, 15.66, 15.58, 16.44, 17.77, 21.10, 21.09, 22.83],
+        "Asset PV01": [8.12, 7.02, 6.88, 7.18, 8.54, 9.72, 11.22, 12.64, 15.20]
+      }
+    },
+    {
+      "series_key": "alm_coverage",
+      "series_label": "Interest-rate coverage ratio (asset PV01 / liability PV01)",
+      "unit": "pct",
+      "chart_type": "line",
+      "source_slide": 27,
+      "years": [2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024],
+      "categories": {
+        "": [63.0, 50.1, 43.9, 46.1, 51.9, 54.7, 53.2, 59.9, 66.6]
+      }
+    },
+    {
+      "series_key": "asset_leverage",
+      "series_label": "Asset leverage (syndicate financial investments / NEP)",
+      "unit": "ratio",
+      "chart_type": "line",
+      "source_slide": 29,
+      "years": [2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024],
+      "categories": {
+        "": [2.44, 2.28, 2.40, 2.46, 2.69, 2.74, 2.58, 2.42, 2.37]
       }
     },
     {
@@ -58,43 +134,91 @@
       }
     },
     {
-      "series_key": "investment_returns",
-      "series_label": "Investment returns & expenses",
-      "unit": "pct",
-      "chart_type": "line",
-      "source_slide": 35,
-      "years": [2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024],
+      "series_key": "invest_by_ccy",
+      "series_label": "Syndicate investments by currency",
+      "unit": "gbp_bn",
+      "chart_type": "stacked_column",
+      "source_slide": 31,
+      "years": [2016, 2020, 2024],
       "categories": {
-        "Syndicate return": [1.46, 1.63, 0.55, 2.62, 1.77, 0.15, -1.93, 3.27, 2.90],
-        "Notional FAL return": [1.67, 2.94, 0.67, 6.00, 3.07, 2.69, -3.92, 6.53, 6.11],
-        "Investment expenses": [9.8, 12.9, 7.5, 9.1, 7.5, 7.3, 7.3, 8.3, 9.2]
-      },
-      "units": { "Investment expenses": "bps" }
-    },
-    {
-      "series_key": "alm_coverage",
-      "series_label": "Interest-rate coverage ratio (asset PV01 / liability PV01)",
-      "unit": "pct",
-      "chart_type": "line",
-      "source_slide": 27,
-      "years": [2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024],
-      "categories": {
-        "": [63.0, 50.1, 43.9, 46.1, 51.9, 54.7, 53.2, 59.9, 66.6]
+        "GBP": [9.5, 10.8, 11.8],
+        "USD": [36.4, 46.2, 66.0],
+        "EUR": [2.7, 2.7, 4.7],
+        "CAD": [4.7, 6.0, 8.2],
+        "AUD": [1.5, 1.8, 3.0],
+        "OTH": [0.6, 1.9, 2.1]
       }
     },
     {
-      "series_key": "credit_quality",
-      "series_label": "Fixed-income credit quality distribution",
+      "series_key": "ccy_coverage",
+      "series_label": "Investments / technical provisions by currency",
       "unit": "pct",
+      "chart_type": "table",
+      "source_slide": 31,
+      "years": [2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024],
+      "categories": {
+        "GBP": [74, 74, 64, 69, 72, 69, 70, 69, 68],
+        "USD": [90, 77, 80, 87, 88, 84, 79, 86, 83],
+        "EUR": [55, 57, 42, 48, 49, 56, 52, 65, 76],
+        "CAD": [130, 127, 132, 121, 129, 125, 119, 129, 131],
+        "AUD": [100, 106, 111, 94, 79, 72, 74, 80, 93],
+        "OTH": [73, 82, 90, 104, 202, 324, 389, 373, 315]
+      }
+    },
+    {
+      "series_key": "asset_classes_abs",
+      "series_label": "Asset classes, absolute",
+      "unit": "gbp_bn",
       "chart_type": "stacked_column",
-      "source_slide": 35,
+      "source_slide": 32,
       "years": [2016, 2018, 2020, 2022, 2024],
       "categories": {
-        "AAA": [21.0, 23.4, 22.2, 27.0, 23.4],
-        "AA": [24.3, 20.0, 17.5, 18.7, 23.8],
-        "A": [33.1, 30.7, 32.2, 31.5, 31.6],
-        "BBB": [9.0, 9.9, 9.3, 8.7, 11.4],
-        "Other": [12.6, 16.1, 18.9, 14.2, 9.7]
+        "Shares & variable yield": [9.1, 8.6, 9.0, 9.6, 11.7],
+        "Debt & fixed income": [38.2, 41.7, 47.8, 61.1, 71.6],
+        "Investment pools": [1.9, 2.3, 2.8, 2.7, 4.3],
+        "Loans & deposits": [6.0, 7.8, 9.7, 9.9, 8.0],
+        "Other": [0.1, 0.1, 0.2, 0.3, 0.3]
+      }
+    },
+    {
+      "series_key": "asset_classes_pct",
+      "series_label": "Asset classes, proportional",
+      "unit": "pct",
+      "chart_type": "stacked_column_100",
+      "source_slide": 32,
+      "years": [2016, 2020, 2024],
+      "categories": {
+        "Shares & variable yield": [16.5, 13.0, 12.2],
+        "Debt & fixed income": [69.0, 68.7, 74.7],
+        "Investment pools": [3.4, 4.0, 4.5],
+        "Loans & deposits": [10.9, 13.9, 8.3],
+        "Other": [0.2, 0.3, 0.3]
+      }
+    },
+    {
+      "series_key": "fair_value_abs",
+      "series_label": "Fair-value hierarchy, absolute",
+      "unit": "gbp_bn",
+      "chart_type": "stacked_column",
+      "source_slide": 33,
+      "years": [2016, 2018, 2020, 2022, 2024],
+      "categories": {
+        "Level 1": [21.6, 23.9, 29.5, 38.9, 40.1],
+        "Level 2": [32.9, 35.5, 38.5, 45.5, 53.7],
+        "Level 3": [0.9, 1.0, 0.9, 1.5, 1.9]
+      }
+    },
+    {
+      "series_key": "fair_value_pct",
+      "series_label": "Fair-value hierarchy, proportional",
+      "unit": "pct",
+      "chart_type": "stacked_column_100",
+      "source_slide": 33,
+      "years": [2016, 2020, 2024],
+      "categories": {
+        "Level 1": [39.0, 42.8, 41.9],
+        "Level 2": [59.4, 55.9, 56.1],
+        "Level 3": [1.6, 1.4, 2.0]
       }
     },
     {
@@ -110,6 +234,35 @@
         "Corporate bonds": [19.5, 29.9, 29.0, 26.5, 28.6],
         "Deposits (Lloyd's)": [8.1, 10.4, 14.9, 11.6, 9.0],
         "Letters of credit": [44.1, 29.9, 22.1, 22.6, 28.0]
+      }
+    },
+    {
+      "series_key": "investment_returns",
+      "series_label": "Investment returns & expenses",
+      "unit": "pct",
+      "chart_type": "line",
+      "source_slide": 35,
+      "years": [2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024],
+      "categories": {
+        "Syndicate return": [1.46, 1.63, 0.55, 2.62, 1.77, 0.15, -1.93, 3.27, 2.90],
+        "Notional FAL return": [1.67, 2.94, 0.67, 6.00, 3.07, 2.69, -3.92, 6.53, 6.11],
+        "Investment expenses": [9.8, 12.9, 7.5, 9.1, 7.5, 7.3, 7.3, 8.3, 9.2]
+      },
+      "units": { "Investment expenses": "bps" }
+    },
+    {
+      "series_key": "credit_quality",
+      "series_label": "Fixed-income credit quality distribution",
+      "unit": "pct",
+      "chart_type": "stacked_column_100",
+      "source_slide": 35,
+      "years": [2016, 2018, 2020, 2022, 2024],
+      "categories": {
+        "AAA": [21.0, 23.4, 22.2, 27.0, 23.4],
+        "AA": [24.3, 20.0, 17.5, 18.7, 23.8],
+        "A": [33.1, 30.7, 32.2, 31.5, 31.6],
+        "BBB": [9.0, 9.9, 9.3, 8.7, 11.4],
+        "Other": [12.6, 16.1, 18.9, 14.2, 9.7]
       }
     }
   ]
