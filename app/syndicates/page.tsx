@@ -52,8 +52,8 @@ export default async function SyndicatesPage() {
       </section>
 
       <div className="foot">
-        Net earned premium and combined ratio extracted from Lloyd&apos;s syndicate annual reports (2020-2025), stored in
-        the syndicate_summary table. Breadth over depth: only the {citedCount} <Link href="/" className="m-link">cited</Link>{" "}
+        Net earned premium and combined ratio extracted from Lloyd&apos;s syndicate annual reports (2020-2025).
+        Breadth over depth: only the {citedCount} <Link href="/" className="m-link">cited</Link>{" "}
         syndicates carry per-page source citations.
       </div>
     </main>

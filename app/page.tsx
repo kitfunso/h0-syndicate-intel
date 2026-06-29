@@ -1,10 +1,8 @@
 import { buildDashboard } from "@/lib/dashboard";
-import { getMarketSeries } from "@/lib/macro";
 import { getReportQuotes, type ReportQuote } from "@/lib/quotes";
 import { getDisplayRate, CURRENCY_SYMBOL, type DisplayCurrency } from "@/lib/fx";
 import { AskBox } from "./components/ask-box";
 import { LeagueWithPeek, type LeagueRow } from "./components/league-with-peek";
-import { MacroContext } from "./components/macro-context";
 import { Toggles } from "./components/toggles";
 import Link from "next/link";
 
@@ -83,28 +81,22 @@ export default async function Home({ searchParams }: { searchParams: Promise<Rec
   const sp = await searchParams;
   const first = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v);
   const year = clampYear(first(sp.year));
-  const ccy = clampCcy(first(sp.ccy));
-  const rate = await getDisplayRate(ccy, year).catch(() => 1);
+  // On an FX lookup failure, fall back to GBP (not the selected ccy at rate 1) so the
+  // currency symbol always matches the magnitude shown.
+  let ccy = clampCcy(first(sp.ccy));
+  let rate = 1;
+  try {
+    rate = await getDisplayRate(ccy, year);
+  } catch {
+    ccy = "GBP";
+    rate = 1;
+  }
   const sym = CURRENCY_SYMBOL[ccy];
   const fullYear = year === REPORT_YEAR; // 2023 has scatter + narrative + source-page images
 
   // Fetch the full market (covers every league row's GWP lookup); display slices below.
   const d = await buildDashboard({ year, yearFrom: year - 1, yearTo: year, limit: 50 });
-  const LEAGUE_ROWS = 25; // all cited syndicates (buildDashboard already fetches up to 50)
-  const macroAll = await getMarketSeries().catch(() => []);
-  const result2023 =
-    macroAll.find((s) => s.series_key === "result_before_tax")?.points.find((p) => p.year === REPORT_YEAR)?.value ?? null;
-
-  // Whole-market headline aggregates (2024) for the "market at a glance" KPI band.
-  const macroVal = (key: string, yr: number, category = "") =>
-    macroAll.find((s) => s.series_key === key)?.points.find((p) => p.year === yr && p.category === category)?.value ?? null;
-  const kpi = {
-    syndicateInvest: macroVal("asset_pools", 2024, "Syndicate financial investments"),
-    almCoverage: macroVal("alm_coverage", 2024),
-    debtFI: macroVal("asset_classes_pct", 2024, "Debt & fixed income"),
-    level3: macroVal("fair_value_abs", 2024, "Level 3"),
-    investGrade: (() => { const o = macroVal("credit_quality", 2024, "Other"); return o == null ? null : 100 - o; })(),
-  };
+  const LEAGUE_ROWS = 10; // top of the cited sample; the full 132-syndicate universe lives on /syndicates
 
   const synNums = d.rank_by_combined_ratio.map((r) => n(r.syndicate_number));
   const quotes: Record<number, ReportQuote> = fullYear ? await getReportQuotes(synNums).catch(() => ({})) : {};
@@ -138,35 +130,21 @@ export default async function Home({ searchParams }: { searchParams: Promise<Rec
     <main className="page">
       <header className="masthead">
         <div>
-          <h1>Ask the Market</h1>
-          <div className="kicker">A research desk for the Lloyd&apos;s of London syndicate market. Browse <Link href="/syndicates" className="m-link">all 132 syndicates &rarr;</Link></div>
+          <h1>Syndicate research desk</h1>
+          <div className="kicker">A research desk for the Lloyd&apos;s of London syndicate market. This desk shows the PDF-cited sample; browse <Link href="/syndicates" className="m-link">all 132 syndicates, 2020-2025 &rarr;</Link> or the <Link href="/market" className="m-link">market in charts &rarr;</Link>.</div>
         </div>
         <div className="issue">
           <Toggles ccy={ccy} year={year} />
-          <div className="issue-sub">{n(ov.n_combined_ratio)} syndicates · {year} year of account · source: AR {REPORT_YEAR}</div>
+          <div className="issue-sub">{n(ov.n_combined_ratio)} PDF-cited syndicates · {year} year of account · source: AR {REPORT_YEAR}</div>
         </div>
       </header>
 
       <AskBox />
 
-      <section className="band">
-        <h2 className="sec">The Lloyd&apos;s market at a glance</h2>
-        <p className="dek">Whole-market aggregates, 2016 to 2024. The 25 cited syndicates below are the PDF-sourced sample within this ~100-syndicate market. <Link href="/market" className="m-link">Full market research &rarr;</Link></p>
-        <section className="tiles kpi-band">
-          <div className="tile macro"><div className="k">Capital platform</div><div className="v">£125bn+</div><div className="d">Lloyd&apos;s total capital base</div></div>
-          <div className="tile macro"><div className="k">Syndicate investments</div><div className="v">{kpi.syndicateInvest != null ? `£${n(kpi.syndicateInvest).toFixed(0)}bn` : "n/a"}</div><div className="d">Financial assets, 2024</div></div>
-          <div className="tile macro"><div className="k">Interest-rate coverage</div><div className="v">{kpi.almCoverage != null ? `${n(kpi.almCoverage).toFixed(0)}%` : "n/a"}</div><div className="d">Asset vs liability PV01, 2024</div></div>
-          <div className="tile macro"><div className="k">Investment grade</div><div className="v">{kpi.investGrade != null ? `${n(kpi.investGrade).toFixed(0)}%+` : "n/a"}</div><div className="d">Fixed-income holdings, 2024</div></div>
-          <div className="tile macro"><div className="k">Debt &amp; fixed income</div><div className="v">{kpi.debtFI != null ? `${n(kpi.debtFI).toFixed(1)}%` : "n/a"}</div><div className="d">Share of investments, 2024</div></div>
-          <div className="tile macro"><div className="k">Private assets (L3)</div><div className="v">{kpi.level3 != null ? `£${n(kpi.level3).toFixed(1)}bn` : "n/a"}</div><div className="d">Hard-to-value holdings, 2024</div></div>
-        </section>
-      </section>
-
       <section className="tiles">
-        <div className="tile"><div className="k">Average combined ratio</div><div className="v">{ov.avg_combined_ratio != null ? n(ov.avg_combined_ratio).toFixed(1) : "n/a"}</div><div className="d">{year}, {n(ov.n_combined_ratio)} syndicates</div></div>
-        <div className="tile"><div className="k">Total gross premium</div><div className="v">{ov.total_gwp_gbp != null ? dispM(ov.total_gwp_gbp, rate, sym) : "n/a"}</div><div className="d">{ccy} display</div></div>
+        <div className="tile"><div className="k">Average combined ratio</div><div className="v">{ov.avg_combined_ratio != null ? n(ov.avg_combined_ratio).toFixed(1) : "n/a"}</div><div className="d">{year}, {n(ov.n_combined_ratio)} cited syndicates</div></div>
+        <div className="tile"><div className="k">Total gross premium</div><div className="v">{ov.total_gwp_gbp != null ? dispM(ov.total_gwp_gbp, rate, sym) : "n/a"}</div><div className="d">{ccy} display, cited sample</div></div>
         <div className="tile"><div className="k">Strongest underwriter</div><div className="v">{best ? n(best.value_gbp).toFixed(1) : "n/a"}</div><div className="d">{best ? `${shortName(String(best.name))}, syndicate ${n(best.syndicate_number)}` : ""}</div></div>
-        <div className="tile macro"><div className="k">Market result before tax</div><div className="v">{result2023 != null ? `£${result2023.toFixed(2)}bn` : "n/a"}</div><div className="tag">Lloyd&apos;s market aggregate</div></div>
       </section>
 
       <div className="cols">
@@ -203,14 +181,12 @@ export default async function Home({ searchParams }: { searchParams: Promise<Rec
 
         <div>
           <h2 className="sec">By combined ratio</h2>
-          <p className="dek">All 25 PDF-cited syndicates, lowest (strongest) combined ratio first.{fullYear ? " Click a syndicate to see its source." : ""}</p>
+          <p className="dek">Top {LEAGUE_ROWS} of the 25 PDF-cited syndicates, lowest (strongest) combined ratio first.{fullYear ? " Click a syndicate to see its source." : ""} <Link href="/syndicates" className="m-link">Browse all 132 &rarr;</Link></p>
           <LeagueWithPeek rows={league} sourcesEnabled={fullYear} />
         </div>
       </div>
 
-      <MacroContext series={macroAll} />
-
-      <div className="foot">Numbers from the filings, citations to the page. Aurora PostgreSQL with pgvector, served on Vercel.</div>
+      <div className="foot">Numbers from the filings, citations to the page. Market-wide context lives on the <Link href="/market" className="m-link">market tab</Link>. Aurora PostgreSQL with pgvector, served on Vercel.</div>
     </main>
   );
 }

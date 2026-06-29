@@ -11,7 +11,7 @@
 :root {
   color-scheme: light;
   --bg:#f6f7f9; --panel:#ffffff; --ink:#0f172a; --ink-2:#1e293b;
-  --muted:#5b6675; --faint:#94a3b8; --line:#e7eaee; --line-2:#eef1f4;
+  --muted:#5b6675; --faint:#6b7280; --line:#e7eaee; --line-2:#eef1f4;
   --brand:#2563eb; --brand-d:#1d4ed8; --brand-soft:#eff4ff;
   --pos:#059669; --neg:#dc2626; --amber:#b45309; --amber-soft:#fffbeb;
   --radius:14px; --radius-sm:10px;
@@ -54,6 +54,10 @@ body {
 /* masthead (page-level section header beneath the global nav) */
 .masthead { display: flex; align-items: flex-end; justify-content: space-between; gap: 24px;
   padding-bottom: 18px; margin-bottom: 18px; border-bottom: 1px solid var(--line); }
+@media (max-width: 600px) {
+  .masthead { flex-direction: column; align-items: flex-start; gap: 14px; }
+  .masthead .issue, .masthead .issue-sub, .masthead .toggles { text-align: left; justify-content: flex-start; }
+}
 .masthead h1 { font-size: 30px; font-weight: 800; margin: 0; letter-spacing: -.7px; color: var(--ink); }
 .masthead .kicker { color: var(--muted); font-size: 14.5px; margin-top: 6px; }
 .issue { text-align: right; color: var(--muted); font-size: 11.5px; font-family: var(--mono); line-height: 1.7; white-space: nowrap; }
@@ -132,6 +136,8 @@ h2.sec { font-size: 18px; font-weight: 800; margin: 0 0 2px; letter-spacing: -.4
 .lt tr.row { cursor: pointer; }
 .lt tr.row:hover td { background: #f8fafc; }
 .lt tr.row.sel td { background: var(--brand-soft); }
+/* wide tables scroll horizontally on phones instead of forcing page overflow */
+@media (max-width: 720px) { .lt { display: block; overflow-x: auto; white-space: nowrap; -webkit-overflow-scrolling: touch; } }
 .nm { font-size: 14.5px; font-weight: 600; color: var(--ink); }
 .nm sup { color: var(--brand); font-size: 10px; }
 .nm small { display: block; color: var(--muted); font-size: 11.5px; font-weight: 500; }
@@ -163,6 +169,20 @@ h2.sec { font-size: 18px; font-weight: 800; margin: 0 0 2px; letter-spacing: -.4
 .macro-legend { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px; font-size: 11.5px; color: var(--muted); }
 .macro-legend span { display: inline-flex; align-items: center; gap: 5px; }
 .macro-legend i { width: 10px; height: 10px; border-radius: 3px; display: inline-block; }
+
+/* interactive charts: hover guide + tooltip */
+.chartwrap { position: relative; }
+.chartwrap .hit { cursor: crosshair; }
+.chart-guide { stroke: var(--ink); stroke-width: 1; stroke-dasharray: 3 3; opacity: .35; }
+.charttip { position: absolute; z-index: 5; pointer-events: none; min-width: 96px; max-width: 240px;
+  background: var(--ink); color: #fff; border-radius: 10px; padding: 8px 10px; box-shadow: var(--shadow-md);
+  font-size: 12px; line-height: 1.4; }
+.charttip-t { font-weight: 700; font-family: var(--mono); margin-bottom: 5px; font-size: 11.5px; letter-spacing: .3px; }
+.charttip-r { display: flex; align-items: center; gap: 7px; white-space: nowrap; }
+.charttip-r + .charttip-r { margin-top: 2px; }
+.charttip-r i { width: 8px; height: 8px; border-radius: 2px; flex: 0 0 auto; }
+.charttip-r span { color: #cbd5e1; overflow: hidden; text-overflow: ellipsis; }
+.charttip-r b { margin-left: auto; font-family: var(--mono); font-variant-numeric: tabular-nums; }
 
 .foot { text-align: center; color: var(--muted); font-size: 12.5px; margin-top: 36px; border-top: 1px solid var(--line); padding-top: 18px; }
 

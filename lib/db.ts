@@ -26,11 +26,14 @@ function getPool(): Pool {
 }
 
 export async function execReadOnly(q: SqlQuery): Promise<Record<string, unknown>[]> {
-  const timeoutMs = Number(process.env.STATEMENT_TIMEOUT_MS ?? 5000);
+  // Guard against a non-numeric env (NaN would emit `statement_timeout = NaN`, a SQL
+  // error that fails every query); clamp to a sane [100ms, 30s] window.
+  const rawTimeout = Number(process.env.STATEMENT_TIMEOUT_MS ?? 5000);
+  const timeoutMs = Number.isFinite(rawTimeout) ? Math.min(Math.max(100, rawTimeout), 30000) : 5000;
   const client = await getPool().connect();
   try {
     await client.query("BEGIN READ ONLY");
-    await client.query(`SET LOCAL statement_timeout = ${Math.max(100, timeoutMs)}`);
+    await client.query(`SET LOCAL statement_timeout = ${timeoutMs}`);
     const res = await client.query(q.text, q.params as unknown[]);
     await client.query("COMMIT");
     return res.rows;

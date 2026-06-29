@@ -72,6 +72,18 @@ export default async function MarketPage() {
   const returnsOnly = invRet ? { ...invRet, points: invRet.points.filter((p) => p.unit === "pct") } : undefined;
   const expensesOnly = invRet ? { ...invRet, points: invRet.points.filter((p) => p.unit === "bps").map((p) => ({ ...p, category: "" })) } : undefined;
 
+  // Whole-market headline aggregates (2024) for the "at a glance" KPI band.
+  const mv = (key: string, yr: number, category = "") =>
+    byKey.get(key)?.points.find((p) => p.year === yr && p.category === category)?.value ?? null;
+  const kpi = {
+    syndicateInvest: mv("asset_pools", 2024, "Syndicate financial investments"),
+    almCoverage: mv("alm_coverage", 2024),
+    debtFI: mv("asset_classes_pct", 2024, "Debt & fixed income"),
+    level3: mv("fair_value_abs", 2024, "Level 3"),
+    investGrade: (() => { const o = mv("credit_quality", 2024, "Other"); return o == null ? null : 100 - o; })(),
+  };
+  const num = (v: number | null) => (v == null ? null : Number(v));
+
   return (
     <main className="page">
       <header className="masthead">
@@ -82,9 +94,18 @@ export default async function MarketPage() {
         <div className="issue">
           Lloyd&apos;s market aggregates<br />
           <span className="on">2016-2024</span> · not click-to-source<br />
-          every series queryable in market_series
+          transcribed from Lloyd&apos;s market reports
         </div>
       </header>
+
+      <section className="tiles kpi-band">
+        <div className="tile macro"><div className="k">Capital platform</div><div className="v">£125bn+</div><div className="d">Lloyd&apos;s total capital base</div></div>
+        <div className="tile macro"><div className="k">Syndicate investments</div><div className="v">{kpi.syndicateInvest != null ? `£${num(kpi.syndicateInvest)!.toFixed(0)}bn` : "n/a"}</div><div className="d">Financial assets, 2024</div></div>
+        <div className="tile macro"><div className="k">Interest-rate coverage</div><div className="v">{kpi.almCoverage != null ? `${num(kpi.almCoverage)!.toFixed(0)}%` : "n/a"}</div><div className="d">Asset vs liability PV01, 2024</div></div>
+        <div className="tile macro"><div className="k">Investment grade</div><div className="v">{kpi.investGrade != null ? `${num(kpi.investGrade)!.toFixed(0)}%+` : "n/a"}</div><div className="d">Fixed-income holdings, 2024</div></div>
+        <div className="tile macro"><div className="k">Debt &amp; fixed income</div><div className="v">{kpi.debtFI != null ? `${num(kpi.debtFI)!.toFixed(1)}%` : "n/a"}</div><div className="d">Share of investments, 2024</div></div>
+        <div className="tile macro"><div className="k">Private assets (L3)</div><div className="v">{kpi.level3 != null ? `£${num(kpi.level3)!.toFixed(1)}bn` : "n/a"}</div><div className="d">Hard-to-value holdings, 2024</div></div>
+      </section>
 
       <section className="m-sec">
         <h2 className="sec">Aggregate market performance</h2>
@@ -248,7 +269,7 @@ export default async function MarketPage() {
       </section>
 
       <div className="foot">
-        Source: Lloyd&apos;s market aggregate data, 2016-2024, stored in the market_series table. Aggregates are context:
+        Source: Lloyd&apos;s market aggregate data, 2016-2024. These aggregates are context only:
         per-syndicate figures with page citations live on the <Link href="/" className="m-link">research desk</Link>.
       </div>
     </main>

@@ -63,16 +63,25 @@ async function main() {
       if (n % 100 === 0) console.log(`  ...${n} rows`);
     }
 
-    // Citation flag: a row is cited iff its syndicate has a verified syndicate_year
-    // entry. cited defaults false on insert; this is the only place it is set true.
+    // Citation flag: a row is cited iff THAT syndicate-YEAR has a verified
+    // syndicate_year entry (figures reconciled vs the source PDF). Correlated on both
+    // syndicate_number and year_of_account, so the tag never appears on a year we did
+    // not actually cite (citations exist only for the report years, 2022/2023).
+    // Reset first so a re-seed cannot leave a stale true behind.
+    await client.query(`UPDATE syndicate_summary SET cited = false`);
     const cited = await client.query(
-      `UPDATE syndicate_summary SET cited = true
-       WHERE syndicate_number IN (SELECT syndicate_number FROM syndicate_year WHERE verified = true)`
+      `UPDATE syndicate_summary s SET cited = true
+       WHERE EXISTS (
+         SELECT 1 FROM syndicate_year y
+         WHERE y.syndicate_number = s.syndicate_number
+           AND y.year_of_account = s.year_of_account
+           AND y.verified = true
+       )`
     );
 
     const syndicateCount = new Set(data.records.map((r) => r.syndicate_number)).size;
     console.log(`\nsyndicate_summary: ${n} rows across ${syndicateCount} syndicates.`);
-    console.log(`cited=true set on ${cited.rowCount} rows (syndicates with a verified syndicate_year).`);
+    console.log(`cited=true set on ${cited.rowCount} rows (verified syndicate-years).`);
   } finally {
     await client.end();
   }

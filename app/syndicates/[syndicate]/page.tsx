@@ -51,7 +51,9 @@ function unit(ccy: string | null): string {
 // KPI tile money, native currency, losses in parentheses: "$1,376m", "(£45m)".
 function money(v: number, ccy: string | null): string {
   const sym = ccy ? SYM[ccy] ?? "" : "";
-  const a = Math.round(Math.abs(v)).toLocaleString("en-GB");
+  const abs = Math.abs(v);
+  // Sub-million premiums keep one decimal ("$0.2m") rather than rounding to "$0m".
+  const a = abs > 0 && abs < 1 ? abs.toFixed(1) : Math.round(abs).toLocaleString("en-GB");
   return v < 0 ? `(${sym}${a}m)` : `${sym}${a}m`;
 }
 
@@ -272,8 +274,8 @@ export default async function SyndicatePage({ params }: { params: Promise<{ synd
       )}
 
       <div className="foot">
-        Figures extracted via Synth from the syndicate&apos;s annual reports and stored in the syndicate_detail and
-        syndicate_summary tables; amounts are in the syndicate&apos;s native reporting currency. Breadth over depth:
+        Figures extracted from the syndicate&apos;s annual reports; amounts are in the syndicate&apos;s native
+        reporting currency. Breadth over depth:
         only the {citedTotal} cited syndicates carry page-level citations on the{" "}
         <Link href="/" className="m-link">research desk</Link>.
       </div>
