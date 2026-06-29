@@ -84,6 +84,13 @@ body {
 /* layout */
 .cols { display: grid; grid-template-columns: 1.3fr 1fr; gap: 34px; margin-top: 24px; }
 @media (max-width: 920px) { .cols { grid-template-columns: 1fr; } .tiles { grid-template-columns: repeat(2, 1fr); } }
+
+/* market "at a glance" KPI band: 6 whole-market aggregates in a 3-up grid */
+.band { margin-top: 20px; }
+.band .sec { margin-bottom: 2px; }
+.tiles.kpi-band { grid-template-columns: repeat(3, 1fr); margin-top: 8px; }
+@media (max-width: 920px) { .tiles.kpi-band { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 560px) { .tiles.kpi-band { grid-template-columns: 1fr; } }
 h2.sec { font-family: var(--serif); font-size: 19px; font-weight: 700; margin: 0 0 2px; letter-spacing: -.2px; }
 .dek { font-family: var(--serif); font-style: italic; color: var(--muted); font-size: 13px; margin: 0 0 14px; }
 
