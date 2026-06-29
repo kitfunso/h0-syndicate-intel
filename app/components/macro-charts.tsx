@@ -6,7 +6,7 @@ import type { MacroSeries } from "@/lib/macro";
  * context: macro data is never wired to the source-page viewer.
  */
 
-export const BANDS = ["#7a2230", "#1f3a5f", "#b07d2b", "#5b7c5a", "#8a5a78", "#3f6f7a", "#9a6a4f"];
+export const BANDS = ["#2563eb", "#0891b2", "#7c3aed", "#059669", "#d97706", "#db2777", "#475569"];
 const W = 480, H = 240, L = 44, R = 12, T = 14, Bm = 30;
 const X0 = L, X1 = W - R, Y0 = T, Y1 = H - Bm;
 
@@ -54,7 +54,7 @@ export function ColumnChart({ s }: { s: MacroSeries }) {
         const h = Math.max(1, Math.abs(y - zeroY));
         return (
           <g key={p.year}>
-            <rect x={cx - bw / 2} y={top} width={bw} height={h} fill={p.value >= 0 ? "#1f3a5f" : "#7a2230"} opacity="0.9" />
+            <rect x={cx - bw / 2} y={top} width={bw} height={h} fill={p.value >= 0 ? "#2563eb" : "#dc2626"} opacity="0.92" />
             <text className="mx" x={cx} y={H - 14} textAnchor="middle">{String(p.year).slice(2)}</text>
             <text className="mv" x={cx} y={p.value >= 0 ? top - 3 : top + h + 9} textAnchor="middle">{fmt(p.value)}</text>
           </g>
