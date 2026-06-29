@@ -139,7 +139,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<Rec
       <header className="masthead">
         <div>
           <h1>Ask the Market</h1>
-          <div className="kicker">A research desk for the Lloyd&apos;s of London syndicate market</div>
+          <div className="kicker">A research desk for the Lloyd&apos;s of London syndicate market. Browse <Link href="/syndicates" className="m-link">all 132 syndicates &rarr;</Link></div>
         </div>
         <div className="issue">
           <Toggles ccy={ccy} year={year} />

@@ -77,7 +77,7 @@ export default async function MarketPage() {
       <header className="masthead">
         <div>
           <h1>The Lloyd&apos;s Market in Charts</h1>
-          <div className="kicker">Market research: aggregates 2016 to 2024. Context layer; per-syndicate cited figures live on the <Link href="/" className="m-link">research desk</Link>.</div>
+          <div className="kicker">Market research: aggregates 2016 to 2024. Context layer; per-syndicate cited figures live on the <Link href="/" className="m-link">research desk</Link>, and every extracted syndicate in the <Link href="/syndicates" className="m-link">syndicate universe &rarr;</Link>.</div>
         </div>
         <div className="issue">
           Lloyd&apos;s market aggregates<br />

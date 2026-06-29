@@ -47,3 +47,5 @@ gcp-key*.json
 
 # typescript
 *.tsbuildinfo
+
+.vercel
