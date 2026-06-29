@@ -46,7 +46,9 @@ export async function askMarket(question: string): Promise<AskResult> {
     return { ok: false, degraded: true, reason: valid.reason, suggestions: SUGGESTIONS };
   }
 
-  const ctx: IntentContext = { execReadOnly, embedQuery, rowLimit: rowLimit() };
+  // The Ask box opens up to the full breadth layer: every extracted syndicate (~130),
+  // not just the page-cited 25. Cited rows still carry their page citations.
+  const ctx: IntentContext = { execReadOnly, embedQuery, rowLimit: rowLimit(), scope: "all" };
 
   let result: Awaited<ReturnType<(typeof CATALOG)[typeof valid.intent]["run"]>>;
   try {

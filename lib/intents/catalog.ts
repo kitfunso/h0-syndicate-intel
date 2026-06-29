@@ -62,20 +62,21 @@ const rankSchema = z.object({
 const rank: IntentDef = {
   name: "rank_syndicates",
   description:
-    "League table: rank syndicates by a metric for one year. combined_ratio asc = best underwriters; gwp/net_earned_premium desc = largest. Monetary metrics are GBP-normalised.",
+    "League table: rank all ~130 syndicates by a metric for one year (2020-2025). combined_ratio asc = best underwriters (covers every syndicate); gwp/net_earned_premium desc = largest, GBP-normalised (a syndicate is omitted from a monetary ranking only when its currency cannot be converted for that year).",
   paramsHint: `{ metric: ${METRICS.join("|")}, year_of_account: int, order?: "asc"|"desc", limit?: int }`,
   schema: rankSchema,
   run: async (p: z.infer<typeof rankSchema>, ctx) => {
     const m = metricSql(p.metric);
     const dir = p.order ? (p.order === "asc" ? "ASC" : "DESC") : m.dir;
     const cap = Math.min(p.limit ?? ctx.rowLimit, ctx.rowLimit);
+    const citedOnly = ctx.scope === "cited" ? "AND sy.cited = true" : "";
     const rows = await ctx.execReadOnly({
       text: `
-        SELECT s.syndicate_number, s.name, sy.year_of_account, sy.currency,
+        SELECT sy.syndicate_number, sy.name, sy.year_of_account, sy.currency,
                ${m.value} AS value_gbp, ${m.native} AS value_native,
-               ${m.page} AS source_page, sy.source_report_id, sy.verified
-        FROM syndicate_year sy JOIN syndicate s USING (syndicate_number)
-        WHERE sy.year_of_account = $1 AND ${m.value} IS NOT NULL
+               ${m.page} AS source_page, sy.source_report_id, sy.verified, sy.cited
+        FROM v_syndicate_metric sy
+        WHERE sy.year_of_account = $1 AND ${m.value} IS NOT NULL ${citedOnly}
         ORDER BY ${m.value} ${dir} LIMIT ${cap}`,
       params: [p.year_of_account],
     });
@@ -92,18 +93,23 @@ const trendSchema = z.object({
 });
 const trend: IntentDef = {
   name: "trend",
-  description: "Time series of one metric for one syndicate across a year range.",
+  description: "Time series of one metric for one syndicate across a year range (any of the ~130 syndicates, 2020-2025). combined_ratio and native-currency premium cover every syndicate.",
   paramsHint: `{ syndicate_number: int, metric: ${METRICS.join("|")}, year_from: int, year_to: int }`,
   schema: trendSchema,
   run: async (p: z.infer<typeof trendSchema>, ctx) => {
     const m = metricSql(p.metric);
+    const citedOnly = ctx.scope === "cited" ? "AND sy.cited = true" : "";
+    // Keep value_gbp honest (real GBP / the ratio) and value_native as filed. A
+    // non-cited monetary row has native-only (no GBP), so include rows that have
+    // EITHER, and the composer reads the native figure with its currency badge.
     const rows = await ctx.execReadOnly({
       text: `
         SELECT sy.syndicate_number, sy.year_of_account, sy.currency,
                ${m.value} AS value_gbp, ${m.native} AS value_native,
-               ${m.page} AS source_page, sy.source_report_id, sy.verified
-        FROM syndicate_year sy
-        WHERE sy.syndicate_number = $1 AND sy.year_of_account BETWEEN $2 AND $3 AND ${m.value} IS NOT NULL
+               ${m.page} AS source_page, sy.source_report_id, sy.verified, sy.cited
+        FROM v_syndicate_metric sy
+        WHERE sy.syndicate_number = $1 AND sy.year_of_account BETWEEN $2 AND $3
+          AND (${m.value} IS NOT NULL OR ${m.native} IS NOT NULL) ${citedOnly}
         ORDER BY sy.year_of_account`,
       params: [p.syndicate_number, p.year_from, p.year_to],
     });
@@ -118,17 +124,18 @@ const compareSchema = z.object({
 });
 const compare: IntentDef = {
   name: "compare",
-  description: "Side-by-side comparison of named syndicates across all metrics for one year.",
+  description: "Side-by-side comparison of named syndicates (any of the ~130) across all metrics for one year (2020-2025). Premiums are shown in each syndicate's native currency.",
   paramsHint: `{ syndicate_numbers: int[2..8], year_of_account: int }`,
   schema: compareSchema,
   run: async (p: z.infer<typeof compareSchema>, ctx) => {
+    const citedOnly = ctx.scope === "cited" ? "AND sy.cited = true" : "";
     const rows = await ctx.execReadOnly({
       text: `
-        SELECT s.syndicate_number, s.name, sy.currency, sy.combined_ratio,
+        SELECT sy.syndicate_number, sy.name, sy.currency, sy.combined_ratio,
                sy.gwp_native, sy.gwp_gbp, sy.nep_native, sy.nep_gbp,
-               sy.combined_ratio_page AS source_page, sy.source_report_id, sy.verified
-        FROM syndicate_year sy JOIN syndicate s USING (syndicate_number)
-        WHERE sy.syndicate_number = ANY($1::int[]) AND sy.year_of_account = $2
+               sy.combined_ratio_page AS source_page, sy.source_report_id, sy.verified, sy.cited
+        FROM v_syndicate_metric sy
+        WHERE sy.syndicate_number = ANY($1::int[]) AND sy.year_of_account = $2 ${citedOnly}
         ORDER BY sy.combined_ratio ASC NULLS LAST`,
       params: [p.syndicate_numbers, p.year_of_account],
     });
@@ -184,20 +191,23 @@ const peerSchema = z.object({
 });
 const peer: IntentDef = {
   name: "peer_percentile",
-  description: "Where a syndicate ranks vs all peers on a metric for a year (percentile).",
+  description: "Where a syndicate ranks vs all peers on a metric for a year (percentile), across the full ~130-syndicate field (2020-2025).",
   paramsHint: `{ syndicate_number: int, metric: "combined_ratio"|"gwp", year_of_account: int }`,
   schema: peerSchema,
   run: async (p: z.infer<typeof peerSchema>, ctx) => {
+    // Percentiles computed over the peer field for the year, then the one syndicate
+    // picked out. Scope controls the field: the whole market, or only the cited set.
+    const scopeFilter = ctx.scope === "cited" ? "AND m.cited = true" : "";
     const rows = await ctx.execReadOnly({
       text: `
-        SELECT pp.syndicate_number, s.name, pp.year_of_account,
-               pp.combined_ratio, pp.combined_ratio_pctile, pp.gwp_gbp, pp.gwp_pctile,
-               sy.combined_ratio_page AS source_page, sy.source_report_id, sy.verified
-        FROM mv_peer_percentiles pp
-        JOIN syndicate s USING (syndicate_number)
-        JOIN syndicate_year sy ON sy.syndicate_number = pp.syndicate_number
-          AND sy.year_of_account = pp.year_of_account
-        WHERE pp.syndicate_number = $1 AND pp.year_of_account = $2`,
+        SELECT * FROM (
+          SELECT m.syndicate_number, m.name, m.year_of_account, m.combined_ratio,
+                 percent_rank() OVER (ORDER BY m.combined_ratio ASC NULLS LAST) AS combined_ratio_pctile,
+                 m.gwp_gbp, percent_rank() OVER (ORDER BY m.gwp_gbp DESC NULLS LAST) AS gwp_pctile,
+                 m.combined_ratio_page AS source_page, m.source_report_id, m.verified, m.cited
+          FROM v_syndicate_metric m
+          WHERE m.year_of_account = $2 ${scopeFilter}
+        ) q WHERE q.syndicate_number = $1`,
       params: [p.syndicate_number, p.year_of_account],
     });
     return { rows, citations: toCitations(rows) };
@@ -208,10 +218,11 @@ const peer: IntentDef = {
 const marketSchema = z.object({ year_of_account: z.number().int().gte(1990).lte(2030) });
 const market: IntentDef = {
   name: "market_overview",
-  description: "Aggregate market stats for a year: syndicate count, average/median combined ratio, total GBP gross premium.",
+  description: "Aggregate market stats for a year (2020-2025): syndicate count, average/median combined ratio, total GBP gross premium, across the full field.",
   paramsHint: `{ year_of_account: int }`,
   schema: marketSchema,
   run: async (p: z.infer<typeof marketSchema>, ctx) => {
+    const scopeFilter = ctx.scope === "cited" ? "AND cited = true" : "";
     const rows = await ctx.execReadOnly({
       text: `
         SELECT $1::int AS year_of_account,
@@ -219,7 +230,7 @@ const market: IntentDef = {
                round(avg(combined_ratio)::numeric, 1) AS avg_combined_ratio,
                round((percentile_cont(0.5) WITHIN GROUP (ORDER BY combined_ratio))::numeric, 1) AS median_combined_ratio,
                round(sum(gwp_gbp)::numeric, 1) AS total_gwp_gbp
-        FROM syndicate_year WHERE year_of_account = $1`,
+        FROM v_syndicate_metric WHERE year_of_account = $1 ${scopeFilter}`,
       params: [p.year_of_account],
     });
     return { rows, citations: [] };

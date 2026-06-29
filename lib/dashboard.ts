@@ -23,6 +23,8 @@ const ctx: IntentContext = {
     throw new Error("dashboard charts are analytical; embeddings are never needed");
   },
   rowLimit: rowLimit(),
+  // The research desk is the page-cited depth layer: 25 syndicates only.
+  scope: "cited",
 };
 
 export type DashboardPayload = {

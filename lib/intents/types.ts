@@ -55,11 +55,20 @@ export type Citation = {
 
 export type AskRow = Record<string, unknown>;
 
+/**
+ * Scope of the structured metric queries:
+ *   "cited" = the 25 page-cited syndicates only (the research desk's depth layer).
+ *   "all"   = every extracted syndicate (the Ask box's breadth layer, ~130).
+ * Scope is an execution concern set by the caller, never an LLM-chosen param.
+ */
+export type Scope = "cited" | "all";
+
 /** Services an intent needs to run, injected so intents stay unit-testable. */
 export type IntentContext = {
   execReadOnly: (q: SqlQuery) => Promise<Record<string, unknown>[]>;
   embedQuery: (text: string) => Promise<number[]>;
   rowLimit: number;
+  scope?: Scope;
 };
 
 export type AskResult =
