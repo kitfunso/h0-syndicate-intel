@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getSyndicateDetail, type SyndicateDetailRow } from "@/lib/syndicate-detail";
 import { getAllSyndicates, type SyndicateSummary } from "@/lib/all-syndicates";
+import { shortName } from "@/lib/short-name";
 import type { MacroSeries } from "@/lib/macro";
 import {
   ColumnChart,
@@ -25,22 +26,6 @@ export const dynamic = "force-dynamic";
  */
 
 const SYM: Record<string, string> = { GBP: "£", USD: "$", EUR: "€" };
-
-// Short display name from the managing-agent legal name (drops the corporate suffix),
-// matching the research desk and the syndicate-universe table so names read the same.
-const STOP = new Set([
-  "Underwriting", "Managing", "Syndicates", "Syndicate", "Agency", "Agencies",
-  "Management", "Limited", "Ltd", "Holdings", "Group",
-]);
-function shortName(full: string): string {
-  const words = full.split(/\s+/);
-  const keep: string[] = [];
-  for (const w of words) {
-    if (STOP.has(w.replace(/[(),.]/g, ""))) break;
-    keep.push(w);
-  }
-  return (keep.length ? keep : [words[0]]).join(" ");
-}
 
 // "£m" / "$m" / "m" when the currency is unknown. Unit label for a card title.
 function unit(ccy: string | null): string {
@@ -255,8 +240,8 @@ export default async function SyndicatePage({ params }: { params: Promise<{ synd
         <section className="m-sec">
           <h2 className="sec">Combined ratio &amp; premium trend</h2>
           <p className="dek">
-            The headline combined ratio and net earned premium across the years of account on record, from the
-            syndicate summary table.
+            The headline combined ratio and net earned premium across the years of account on record for this
+            syndicate.
           </p>
           <div className="macro-grid">
             {crSeries.points.length > 0 && (

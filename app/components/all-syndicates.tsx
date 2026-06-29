@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import type { SyndicateSummary } from "@/lib/all-syndicates";
+import { shortName } from "@/lib/short-name";
 
 /**
  * The syndicate-universe table: the full extracted set, searchable by name or number,
@@ -21,22 +22,6 @@ type SortDir = "asc" | "desc";
 // Each column opens in its most-useful direction: strongest combined ratio (lowest)
 // and biggest premium (highest) first; identifiers ascending.
 const DEFAULT_DIR: Record<SortKey, SortDir> = { syndicate: "asc", name: "asc", cr: "asc", nep: "desc" };
-
-// Short display name from the managing-agent legal name (drops the corporate suffix),
-// mirroring the research desk's league table so names read the same across pages.
-const STOP = new Set([
-  "Underwriting", "Managing", "Syndicates", "Syndicate", "Agency", "Agencies",
-  "Management", "Limited", "Ltd", "Holdings", "Group",
-]);
-function shortName(full: string): string {
-  const words = full.split(/\s+/);
-  const keep: string[] = [];
-  for (const w of words) {
-    if (STOP.has(w.replace(/[(),.]/g, ""))) break;
-    keep.push(w);
-  }
-  return (keep.length ? keep : [words[0]]).join(" ");
-}
 
 // Net earned premium in the filing's native currency, e.g. "$1,376m" / "£331m".
 function nepDisplay(nep: number, ccy: string | null): string {

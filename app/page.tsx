@@ -4,6 +4,7 @@ import { getDisplayRate, CURRENCY_SYMBOL, type DisplayCurrency } from "@/lib/fx"
 import { AskBox } from "./components/ask-box";
 import { LeagueWithPeek, type LeagueRow } from "./components/league-with-peek";
 import { Toggles } from "./components/toggles";
+import { shortName } from "@/lib/short-name";
 import Link from "next/link";
 
 // pg runs server-side; render per request (the DB is read at request time, not build).
@@ -23,17 +24,6 @@ function clampCcy(v: string | undefined): DisplayCurrency {
   return v === "USD" || v === "EUR" ? v : "GBP";
 }
 
-// Short display name from the managing-agent legal name (drops the corporate suffix).
-const STOP = new Set(["Underwriting", "Managing", "Syndicates", "Syndicate", "Agency", "Limited", "Ltd", "Holdings", "Group"]);
-function shortName(full: string): string {
-  const words = full.split(/\s+/);
-  const keep: string[] = [];
-  for (const w of words) {
-    if (STOP.has(w.replace(/[(),.]/g, ""))) break;
-    keep.push(w);
-  }
-  return (keep.length ? keep : [words[0]]).join(" ");
-}
 // Comparable value in the selected display currency (from the GBP-normalised value).
 const dispM = (gbp: unknown, rate: number, sym: string) => `${sym}${Math.round(n(gbp) * rate).toLocaleString("en-GB")}m`;
 // As-filed value in the report's native currency (for citation).
