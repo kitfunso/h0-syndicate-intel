@@ -13,6 +13,7 @@
     "seed:spike": "tsx db/seed-spike.ts",
     "seed:market": "tsx db/seed-market.ts",
     "seed:all": "tsx db/seed-all-syndicates.ts",
+    "seed:detail": "tsx db/seed-syndicate-detail.ts",
     "test": "vitest run tests/validator.test.ts",
     "test:int": "vitest run tests/safety.int.test.ts tests/fx-quotes.int.test.ts",
     "spike": "tsx scripts/spike.ts"

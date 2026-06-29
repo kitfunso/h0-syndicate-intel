@@ -165,7 +165,9 @@ export function AllSyndicates({ rows }: { rows: SyndicateSummary[] }) {
                 <td className="num syn-rank">{i + 1}</td>
                 <td>
                   <span className="nm">
-                    {r.short} {r.syndicateNumber}
+                    <Link href={`/syndicates/${r.syndicateNumber}`} className="syn-link" title={`Open Syndicate ${r.syndicateNumber} profile`}>
+                      {r.short} {r.syndicateNumber}
+                    </Link>
                     {r.cited && (
                       <Link href="/" className="cited-tag" title="Page-cited on the research desk">cited</Link>
                     )}

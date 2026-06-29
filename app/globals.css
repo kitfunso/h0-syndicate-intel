@@ -209,6 +209,10 @@ h2.sec { font-family: var(--serif); font-size: 19px; font-weight: 700; margin: 0
   color: var(--claret); border: 1px solid var(--claret); border-radius: 3px; padding: 1px 5px; text-decoration: none; }
 .cited-tag:hover { background: var(--claret); color: #fff; }
 .cited-tag:focus-visible { outline: 2px solid var(--navy); outline-offset: 2px; }
+/* the syndicate name links through to its profile; keep the editorial look, add an affordance */
+.nm a.syn-link { color: var(--ink); text-decoration: none; }
+.nm a.syn-link:hover { color: var(--claret); text-decoration: underline dotted; text-underline-offset: 2px; }
+.nm a.syn-link:focus-visible { outline: 2px solid var(--navy); outline-offset: 2px; }
 .syn-na { color: var(--muted); }
 .syn-empty { text-align: center; font-family: var(--serif); font-style: italic; color: var(--muted); padding: 26px 4px; }
 @media (max-width: 560px) { .syn-yearseg { margin-left: 0; } .syn-search { flex-basis: 100%; } }
