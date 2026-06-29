@@ -14,8 +14,8 @@ type AskResult =
   | { ok: false; degraded: true; reason: string; suggestions: string[] };
 
 const SAMPLES = [
-  "rank syndicates by combined ratio in 2023",
-  "how is Talbot trending",
+  "rank syndicates by combined ratio in 2024",
+  "how has Chaucer's combined ratio trended since 2020",
   "what are syndicates saying about cyber rates",
 ];
 
@@ -56,7 +56,7 @@ export function AskBox() {
         <button className="go" disabled={loading}>{loading ? "Reading…" : "Ask"}</button>
       </form>
       <p className="byline">
-        Answered from the filings in seconds, every figure footnoted to its source page. Try{" "}
+        All ~130 syndicates, 2020-2025, answered in seconds. Figures from the cited 25 are footnoted to their source page. Try{" "}
         {SAMPLES.map((s, i) => (
           <span key={s}>
             <button type="button" className="lk" onClick={() => ask(s)}>{s}</button>{i < SAMPLES.length - 1 ? ", " : "."}
